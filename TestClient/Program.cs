@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Protocol;
 
 namespace TestClient;
@@ -20,18 +21,16 @@ internal class Program
 
         Console.ReadLine();
 
-        var m = "Hi, server. How are you?"u8.ToArray();
-
-        var a = client.Request(m);
-
-        if (a != null)
+        for (int i = 0; i < 10; i++)
         {
-            Console.WriteLine($"Answer from server: {Encoding.UTF8.GetString(a)}");
+            var sw = Stopwatch.StartNew();
+            var a = client.Request(Encoding.UTF8.GetBytes("Hi server, I want to test speed our connection."));
+            sw.Stop();
+            Console.WriteLine($"Time: {sw.Elapsed.TotalMilliseconds:F2} ms");
         }
-        else
-        {
-            Console.WriteLine("Answer is null!");
-        }
+
+        Console.WriteLine("Done");
+
         Console.ReadLine();
 
         client.Close();

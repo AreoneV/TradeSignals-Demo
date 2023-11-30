@@ -32,9 +32,9 @@ internal class Program
 
     private static void ClientOnReceivedRequest(Client client, byte[] request)
     {
-        Console.WriteLine($"Received request: {Encoding.UTF8.GetString(request)}");
+        //Console.WriteLine($"Received request: {Encoding.UTF8.GetString(request)}");
         var answer = "Hi, client. I'm server!"u8.ToArray();
-        Thread.Sleep(10000);
+        //Thread.Sleep(10000);
         client.SendAnswer(answer);
     }
 
