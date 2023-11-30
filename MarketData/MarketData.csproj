@@ -8,4 +8,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="eurusd_future.bin" />
+    <None Remove="eurusd_history.bin" />
+    <None Remove="gbpusd_future.bin" />
+    <None Remove="gbpusd_history.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\eurusd_future.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\eurusd_history.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\gbpusd_future.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\gbpusd_history.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
