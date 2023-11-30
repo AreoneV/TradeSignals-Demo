@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using System.Text;
+using Protocol;
 
 namespace TestClient;
 
@@ -15,6 +16,22 @@ internal class Program
 
         client.Connect();
         Console.WriteLine("I'm connected!");
+
+
+        Console.ReadLine();
+
+        var m = "Hi, server. How are you?"u8.ToArray();
+
+        var a = client.Request(m);
+
+        if (a != null)
+        {
+            Console.WriteLine($"Answer from server: {Encoding.UTF8.GetString(a)}");
+        }
+        else
+        {
+            Console.WriteLine("Answer is null!");
+        }
         Console.ReadLine();
 
         client.Close();

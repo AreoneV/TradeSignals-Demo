@@ -34,6 +34,7 @@ internal class Program
     {
         Console.WriteLine($"Received request: {Encoding.UTF8.GetString(request)}");
         var answer = "Hi, client. I'm server!"u8.ToArray();
+        Thread.Sleep(10000);
         client.SendAnswer(answer);
     }
 
