@@ -137,8 +137,12 @@ public class Client
         //ждем ответ
         waiting.WaitOne(timeOut);
         if (waitData == null) throw new TimeoutException();
+        if (waitData.Length != 0 || IsConnected) return waitData;
 
-        return waitData;
+        client?.Close();
+        ClientDisconnected?.Invoke(this);
+        return null;
+
     }
     /// <summary>
     /// Отправка ответа на сообщение
