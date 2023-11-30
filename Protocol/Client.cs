@@ -20,7 +20,7 @@ public class Client
     private Client()
     {
         //Сразу подписываемся на получение сообщений
-        ReceivedMessage += OnReceivedMessage;
+        ReceivedRequest += OnReceivedMessage;
     }
 
 
@@ -53,7 +53,7 @@ public class Client
     /// <summary>
     /// Происходит когда получено сообщение
     /// </summary>
-    internal event ReceivedMessageDelegate ReceivedMessage;
+    public event ReceivedMessageDelegate ReceivedRequest;
 
 
 
@@ -96,6 +96,7 @@ public class Client
     /// </summary>
     public void Close()
     {
+        if(!IsConnected) return;
         try
         {
             nonErr = true;
@@ -143,7 +144,7 @@ public class Client
     /// Отправка ответа на сообщение
     /// </summary>
     /// <param name="message">Сообщение на которое нужно ответить</param>
-    internal void SendAnswer(byte[] message)
+    public void SendAnswer(byte[] message)
     {
         try
         {
@@ -171,7 +172,7 @@ public class Client
                 {
                     while(IsConnected)
                     {
-                        ReceivedMessage?.Invoke(this, Receive());
+                        ReceivedRequest?.Invoke(this, Receive());
                     }
                 }
                 catch
