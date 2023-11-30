@@ -8,6 +8,7 @@ internal class Program
     {
         Client client = new Client("127.0.0.1", 41222);
 
+        client.ClientDisconnected += ClientOnClientDisconnected;
 
 
         Console.ReadLine();
@@ -18,14 +19,13 @@ internal class Program
 
         client.Close();
 
-        if (!client.IsConnected)
-        {
-            Console.WriteLine("I disconnected.");
-        }
-
         Console.ReadLine();
 
 
     }
 
+    private static void ClientOnClientDisconnected(Client client)
+    {
+        Console.WriteLine("I disconnected.");
+    }
 }

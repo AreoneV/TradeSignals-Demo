@@ -23,20 +23,21 @@ internal class Program
         Console.ReadLine();
     }
 
-    private static void ServerOnUserConnected(Server server, ClientConnected client)
+    private static void ServerOnUserConnected(Server server, Client client)
     {
         Console.WriteLine("User connected.");
         client.ClientDisconnected += ClientOnClientDisconnected;
         client.ReceivedRequest += ClientOnReceivedRequest;
     }
 
-    private static void ClientOnReceivedRequest(ClientConnected client, byte[] request, out byte[] answer)
+    private static void ClientOnReceivedRequest(Client client, byte[] request)
     {
         Console.WriteLine($"Received request: {Encoding.UTF8.GetString(request)}");
-        answer = "Hi, client. I'm server!"u8.ToArray();
+        var answer = "Hi, client. I'm server!"u8.ToArray();
+        client.SendAnswer(answer);
     }
 
-    private static void ClientOnClientDisconnected(ClientConnected client)
+    private static void ClientOnClientDisconnected(Client client)
     {
         Console.WriteLine("User disconnected.");
     }
