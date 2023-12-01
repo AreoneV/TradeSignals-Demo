@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -13,6 +13,10 @@
     <None Remove="eurusd_history.bin" />
     <None Remove="gbpusd_future.bin" />
     <None Remove="gbpusd_history.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MarketInfo\MarketInfo.csproj" />
   </ItemGroup>
 
   <ItemGroup>
