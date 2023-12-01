@@ -47,6 +47,8 @@ public class History(TimeFrame timeFrame)
             //если история пуста то вернем следующий от текущего времени ина от последнего бара
             var lastBarTime = LastBar.Date;
 
+            if (lastBarTime.Year == 1) return lastBarTime;
+
             DateTime dt = lastBarTime;
 
             //просто ко времени прибавляем значение минут данной временной рамки и возвращаем его начало
@@ -121,12 +123,18 @@ public class History(TimeFrame timeFrame)
                     low = bar.Low;
                 }
 
-                barsList[^1] = new Bar(NormalizeDateTime(LastBar.Date), LastBar.Open, bar.Close, high, low);
+                var b = barsList[^1];
+                b.High = high;
+                b.Low = low;
+                b.Close = bar.Close;
 
+                barsList[^1] = b;
                 continue;
             }
 
-            barsList.Add(bar);
+            var cb = bar;
+            cb.Date = NormalizeDateTime(bar.Date);
+            barsList.Add(cb);
         }
     }
 
