@@ -148,7 +148,8 @@ public class History(TimeFrame timeFrame)
     public int IndexOf(DateTime date, bool nearest)
     {
         int left = 0, right = barsList.Count - 1;
-        int index = right / 2;
+        var index = right / 2;
+        date = NormalizeDateTime(date);
         while(true)
         {
             if(right - left <= 1)
@@ -200,7 +201,8 @@ public class History(TimeFrame timeFrame)
                 return new DateTime(date.Year, date.Month, 1);
             //если неделя то возвращаем начало недели(Воскресенье)
             case TimeFrame.W1:
-                return date.AddDays((int)date.DayOfWeek * -1);
+                var d = date.AddDays((int)date.DayOfWeek * -1);
+                return new DateTime(d.Year, d.Month, d.Day);
             //Если день то возвращаем его начало
             case TimeFrame.D1:
                 return new DateTime(date.Year, date.Month, date.Day);
