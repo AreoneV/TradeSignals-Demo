@@ -18,7 +18,7 @@ public class History(TimeFrame timeFrame)
     /// </summary>
     public int Count
     {
-        get => barsList.Count;
+        get { return barsList.Count; }
     }
 
     /// <summary>
@@ -26,25 +26,26 @@ public class History(TimeFrame timeFrame)
     /// </summary>
     public Bar FirstBar
     {
-        get => barsList.FirstOrDefault();
+        get { return barsList.FirstOrDefault(); }
     }
+
     /// <summary>
     /// Последний бар в истории
     /// </summary>
     public Bar LastBar
     {
-        get => barsList.LastOrDefault();
+        get { return barsList.LastOrDefault(); }
     }
 
     /// <summary>
-    /// Время следующего будующего бара
+    /// Время следующего будущего бара
     /// </summary>
     public DateTime FutureBarDate
     {
         get
         {
             //если история пуста то вернем следующий от текущего времени ина от последнего бара
-            var lastBarTime = Count > 0 ? LastBar.Date : DateTime.Now;
+            var lastBarTime = LastBar.Date;
 
             DateTime dt = lastBarTime;
 
@@ -85,7 +86,7 @@ public class History(TimeFrame timeFrame)
 
     public ReadOnlyCollection<Bar> Bars
     {
-        get => barsList.AsReadOnly();
+        get { return barsList.AsReadOnly(); }
     }
 
     /// <summary>
@@ -120,7 +121,7 @@ public class History(TimeFrame timeFrame)
                     low = bar.Low;
                 }
 
-                barsList[^1] = new Bar(LastBar.Date, LastBar.Open, bar.Close, high, low);
+                barsList[^1] = new Bar(NormalizeDateTime(LastBar.Date), LastBar.Open, bar.Close, high, low);
 
                 continue;
             }
@@ -135,7 +136,7 @@ public class History(TimeFrame timeFrame)
     /// </summary>
     /// <param name="date">Время поиска</param>
     /// <param name="nearest">Определяет какой индекс вернуть если бар не найден, если True вернет ближайший если False вернет -1</param>
-    /// <returns>Индекс бара, если бар не найден то возврат зависит он параметра nearest. Если он True то вренет индес ближайшего, иначе вернет -1. Если найдет вернет индекс искомого в любом случае.</returns>
+    /// <returns>Индекс бара, если бар не найден то возврат зависит он параметра nearest. Если он True то вернет индекс ближайшего, иначе вернет -1. Если найдет вернет индекс искомого в любом случае.</returns>
     public int IndexOf(DateTime date, bool nearest)
     {
         int left = 0, right = barsList.Count - 1;
@@ -178,7 +179,7 @@ public class History(TimeFrame timeFrame)
 
 
     /// <summary>
-    /// Нормализация времени во время текущего TimeFrame истоии, например TF == H4 то время 17:38 преобразуется во время 16:00, потому что именно в этом диапазаное(16:00-20:00) будет наш бар
+    /// Нормализация времени во время текущего TimeFrame истории, например TF == H4 то время 17:38 преобразуется во время 16:00, потому что именно в этом диапазоне(16:00-20:00) будет наш бар
     /// </summary>
     /// <param name="date"></param>
     /// <returns></returns>
