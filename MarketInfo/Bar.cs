@@ -4,44 +4,36 @@
 /// <summary>
 /// Рыночный бар, содержит информацию о времени и о ценах открытия, закрытия, максимума и минимума
 /// </summary>
-public readonly struct Bar
+public struct Bar(DateTime date, float open, float close, float high, float low)
 {
-    public Bar(DateTime date, float open, float close, float high, float low)
-    {
-        Date = date;
-        Open = open;
-        Close = close;
-        High = high;
-        Low = low;
-    }
-
-
     public const int BarLength = 8 + 4 + 4 + 4 + 4;//дата + открытие, закрытие, максимум и минимум
 
     /// <summary>
     /// Дата
     /// </summary>
-    public DateTime Date { get; }
+    public DateTime Date { get; set; } = date;
+
     /// <summary>
     /// Цена открытия
     /// </summary>
-    public float Open { get; }
+    public float Open { get; set; } = open;
+
     /// <summary>
     /// Цена закрытия
     /// </summary>
-    public float Close { get; }
+    public float Close { get; set; } = close;
+
     /// <summary>
     /// Цена максимум
     /// </summary>
-    public float High { get; }
+    public float High { get; set; } = high;
+
     /// <summary>
     /// Цена минимума
     /// </summary>
-    public float Low { get; }
+    public float Low { get; set; } = low;
 
 
-
-    
     /// <summary>
     /// Записывает себя в бинарное представление
     /// </summary>
