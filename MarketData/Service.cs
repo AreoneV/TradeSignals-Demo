@@ -1,10 +1,11 @@
-﻿using MarketInfo;
-// ReSharper disable StringLiteralTypo
-﻿namespace MarketData;
+﻿using System.Net;
+using MarketInfo;
+using Protocol;
 
+// ReSharper disable StringLiteralTypo
 namespace MarketData;
 
-public class Service
+internal class Service(IPEndPoint controller, string myIp, int myPort)
 {
     private const string LogFileName = "logs.txt";
 
@@ -15,7 +16,69 @@ public class Service
     private readonly Dictionary<string, List<Bar>> future = new();
 
     private int maxLineLength = 1;
+
+    private readonly Server server = new(myIp, myPort, 10);
+    private readonly Client controllerConnection = new(controller);
+
+    private readonly EventWaitHandle waitClosing = new(false, EventResetMode.AutoReset);
+
+    public void Run()
+    {
+        LogInfo("Starting...");
+        //соединение с контроллером
+
+
+        //
+        LogInfo("Connection to controller is established!");
+        try
+        {
+            //загрузка данных, история и будущее
+            Load("GBPUSD", 5, "Data\\gbpusd_history.bin", "Data\\gbpusd_future.bin");
+            Load("EURUSD", 5, "Data\\eurusd_history.bin", "Data\\eurusd_future.bin");
+            LogInfo("Loading history completed successfully!");
+        }
+        catch(Exception ex)
+        {
+            LogError($"Error loading history: {ex}.\n");
+            //отправить контроллеру
+            LogSplit();
+            return;
+        }
+
+        server.UserConnected += ServerOnUserConnected;
+        server.ServerStarted += ServerOnServerStarted;
+
+        try
+        {
+            server.Start(false);
+        }
+        catch (Exception e)
+        {
+            LogError($"Error starting server: {e}.\n");
+            //отправить контроллеру
+            LogSplit();
+            return;
+        }
+        waitClosing.WaitOne();
+        waitClosing.Dispose();
+        LogSplit();
+        writer.Close();
+    }
+
     
+
+    public void Close(string reason)
+    {
+        LogWarning($"Server is stopping... Reason: {reason}");
+
+        server.Stop();
+        //отправляем на контроллер
+        //закрываем контроллер
+
+        LogWarning("Server was stopped!");
+        waitClosing.Set();
+    }
+
     //Загрузка и добавление одного символа
     private void Load(string name, int digits, string historyFile, string futureFile)
     {
@@ -100,5 +163,24 @@ public class Service
         writer.WriteLine(new string('_', maxLineLength));
         writer.WriteLine();
         writer.Flush();
+    }
+
+
+    private void ServerOnServerStarted(Server srv)
+    {
+        LogInfo("Server is running...");
+    }
+    private void ServerOnUserConnected(Server srv, Client client)
+    {
+        client.ReceivedRequest += ClientOnReceivedRequest;
+        client.ClientDisconnected += ClientOnClientDisconnected;
+    }
+    private void ClientOnClientDisconnected(Client client)
+    {
+
+    }
+    private void ClientOnReceivedRequest(Client client, byte[] message)
+    {
+
     }
 }
