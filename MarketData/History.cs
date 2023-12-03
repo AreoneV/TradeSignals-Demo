@@ -3,7 +3,7 @@ using MarketInfo;
 
 namespace MarketData;
 
-public class History(TimeFrame timeFrame)
+internal class History(TimeFrame timeFrame)
 {
     private readonly List<Bar> barsList = new List<Bar>();
 

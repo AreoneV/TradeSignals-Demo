@@ -6,7 +6,7 @@ namespace MarketData;
 /// <summary>
 /// Хранит историю рыночного символа по разным временным рамкам
 /// </summary>
-public class Symbol
+internal class Symbol
 {
     private readonly Dictionary<TimeFrame, History> histories = new Dictionary<TimeFrame, History>(9);
 
