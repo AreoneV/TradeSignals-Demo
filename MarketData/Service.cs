@@ -5,11 +5,11 @@ using Protocol;
 // ReSharper disable StringLiteralTypo
 namespace MarketData;
 
-internal class Service(IPEndPoint controller, string myIp, int myPort)
+internal class Service(string myIp, int myPort)
 {
     private const string LogFileName = "logs.txt";
 
-    private readonly StreamWriter writer = new StreamWriter(LogFileName, true);
+    private readonly StreamWriter writer = new(LogFileName, true);
 
     private readonly Dictionary<string, Symbol> symbols = new();
 
@@ -18,9 +18,6 @@ internal class Service(IPEndPoint controller, string myIp, int myPort)
     private int maxLineLength = 1;
 
     private readonly Server server = new(myIp, myPort, 10);
-    private readonly Client controllerConnection = new(controller);
-
-    private readonly EventWaitHandle waitClosing = new(false, EventResetMode.AutoReset);
 
     public void Run()
     {
@@ -54,13 +51,16 @@ internal class Service(IPEndPoint controller, string myIp, int myPort)
         }
         catch (Exception e)
         {
-            LogError($"Error starting server: {e}.\n");
+            LogError($"Error running server: {e}.\n");
             //отправить контроллеру
             LogSplit();
             return;
         }
-        waitClosing.WaitOne();
-        waitClosing.Dispose();
+
+        //отправляем на контроллер
+        //закрываем контроллер
+
+        LogWarning("Server was stopped!");
         LogSplit();
         writer.Close();
     }
@@ -70,13 +70,7 @@ internal class Service(IPEndPoint controller, string myIp, int myPort)
     public void Close(string reason)
     {
         LogWarning($"Server is stopping... Reason: {reason}");
-
         server.Stop();
-        //отправляем на контроллер
-        //закрываем контроллер
-
-        LogWarning("Server was stopped!");
-        waitClosing.Set();
     }
 
     //Загрузка и добавление одного символа
