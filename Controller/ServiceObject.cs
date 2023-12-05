@@ -3,13 +3,12 @@ using Protocol;
 
 namespace Controller;
 
-public class ServiceObject
+public class ServiceObject(ServiceNames name, string ip, string fullPath)
 {
-    
-    public string Name { get; set; }
-    public string FullPath { get; set; }
-    public int Id { get; set; }
-    public string Ip { get; set; }
+    public ServiceNames Name { get; } = name;
+    public string FullPath { get; set; } = fullPath;
+    public string Ip { get; set; } = ip;
+    public bool AutoStart { get; set; } = true;
     public int Port { get; set; }
 
     public Process Process { get; set; }
