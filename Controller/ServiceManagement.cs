@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Net.NetworkInformation;
 using Services;
 
 namespace Controller;
@@ -7,6 +8,9 @@ public class ServiceManagement
 {
     private const string SettingFile = "services.setting";
 
+    private readonly Range portRange = new(41222, 41300);
+    private readonly IPGlobalProperties ipGlobalProperties;
+    private readonly Dictionary<ServiceNames, ServiceObject> services;
 
     private Range portRange = new(41222, 41300);
     private readonly Dictionary<ServiceNames, ServiceObject> services;
@@ -16,6 +20,7 @@ public class ServiceManagement
     {
         services = new Dictionary<ServiceNames, ServiceObject>();
         Services = services.AsReadOnly();
+        ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
     }
 
     public ReadOnlyDictionary<ServiceNames, ServiceObject> Services { get; }
@@ -75,5 +80,15 @@ public class ServiceManagement
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Ok");
         Console.ResetColor();
+    }
+    private int GetFreePort()
+    {
+        var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
+        for (var i = portRange.Start.Value; i < portRange.End.Value; i++)
+        {
+            if (tcpConnInfoArray.All(con => con.LocalEndPoint.Port != i)) return i;
+        }
+
+        return -1;
     }
 }
