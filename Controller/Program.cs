@@ -9,6 +9,7 @@ internal class Program
 
     private static void Main()
     {
+        Console.Title = "Service controller";
         Console.Write("Loading...");
         Management.Load();
         Console.WriteLine();
@@ -42,6 +43,16 @@ internal class Program
                 continue;
             }
 
+            var len = cmdLine.Sum(c => c.Length + 1);
+
+            var pos = Console.GetCursorPosition();
+            pos.Left = 0;
+            pos.Top--;
+
+            Console.SetCursorPosition(pos.Left, pos.Top);
+
+            Console.Write(new string(' ', len));
+            Console.SetCursorPosition(0, pos.Top);
 
             var cmd = cmdLine[0];
             switch(cmd)
@@ -51,7 +62,7 @@ internal class Program
                     return;
                 case "start":
                     Management.Start();
-                    return;
+                    break;
             }
         }
     }
