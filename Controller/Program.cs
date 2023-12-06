@@ -26,8 +26,7 @@ internal class Program
         Console.WriteLine("Status: stopped");
 
         Console.WriteLine("If you need help enter '?' or 'help'");
-        Console.WriteLine("Enter command:");
-
+        
         WhileCommand();
     }
 
@@ -37,22 +36,18 @@ internal class Program
     {
         while (true)
         {
+            Console.Write("Enter command:");
             var cmdLine = Console.ReadLine()?.Split(' ');
             if (cmdLine == null)
             {
                 continue;
             }
 
-            var len = cmdLine.Sum(c => c.Length + 1);
+            (int Left, int Top) pos = Console.GetCursorPosition();
 
-            var pos = Console.GetCursorPosition();
-            pos.Left = 0;
-            pos.Top--;
-
-            Console.SetCursorPosition(pos.Left, pos.Top);
-
-            Console.Write(new string(' ', len));
-            Console.SetCursorPosition(0, pos.Top);
+            Console.SetCursorPosition(0, pos.Top - 1);
+            Console.WriteLine(new string(' ', 100));
+            Console.SetCursorPosition(0, pos.Top - 1);
 
             var cmd = cmdLine[0];
             switch(cmd)
