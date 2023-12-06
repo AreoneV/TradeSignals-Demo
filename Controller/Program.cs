@@ -58,6 +58,96 @@ internal class Program
                 case "start":
                     Management.Start();
                     break;
+                case "help":
+                case "?":
+                    var empty = new string(' ', 4);
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}start");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Starting all services which auto start property is true.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}stop");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Stopping all services.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}name");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Show service names.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}log");
+                    Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write(" [count logs]");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Show last logs. Example: log 20 - Show last 20 logs. If not enter number, show last 10 logs.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}change ");
+                    Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write(" [name] [property] [new value]");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Changing service property.");
+                    Console.WriteLine($"{empty}Properties: Ip = '-n', Path = '-p', Auto Start = '-as'.");
+                    Console.WriteLine($"{empty}Path writes \"C:\\Folder\\File.exe\"; IP writes 127.0.0.1; Boolean writes true, false");
+                    Console.WriteLine($"{empty}Example: change MarketData -n 192.168.2.21 (change ip address);");
+                    Console.WriteLine($"{empty}Example: change AI -p \"C:\\MainFolder\\Folder2\\Service\\AI.exe (change path to executable file)\"");
+                    Console.WriteLine($"{empty}Example: change DB -as false (change auto start)");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}monitor");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Monitoring of services info.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}service ");
+                    Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write("[name]  [command]");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Service management. Stopping, Starting and Information");
+                    Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
+                    Console.WriteLine($"{empty}ping - check connection ping; info - resources information");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}update ");
+                    Console.ResetColor();
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write("[name] [new *.exe file]");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Service management. Stopping, Starting and Information");
+                    Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
+                    Console.WriteLine($"{empty}ping - check connection ping; info - resources information");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}clear");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Clearing console.");
+                    Console.WriteLine();
+
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
+                    Console.Write($"{empty}exit");
+                    Console.ResetColor();
+                    Console.WriteLine(" - Stopping and exiting of all.");
+                    Console.WriteLine();
+
+                    break;
+                default:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Wrong command! Enter '?' or 'help'.");
+                    Console.ResetColor();
+                    break;
             }
         }
     }
