@@ -26,7 +26,7 @@ public class ServiceManagement
     }
 
     public ReadOnlyDictionary<ServiceNames, ServiceObject> Services { get; }
-
+    public bool IsStarted { get; private set; }
 
     public void Load()
     {
@@ -34,7 +34,64 @@ public class ServiceManagement
     }
     public void Start()
     {
+        if(IsStarted) return;
 
+        Console.WriteLine("Starting services:");
+        Console.WriteLine("{");
+
+        foreach ((ServiceNames name, ServiceObject value) in services)
+        {
+            var indent = new string(' ', 4);
+            Console.WriteLine($"{indent}{name}:");
+            Console.WriteLine($"{indent}" + "{");
+            if (!File.Exists(value.FullPath))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not fount!");
+                Console.ResetColor();
+                Console.WriteLine($"{indent}" + "}");
+                continue;
+            }
+
+            Console.Write($"{indent}{indent}Starting process...");
+            try
+            {
+                value.StartProcess(GetFreePort());
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Ok");
+                Console.ResetColor();
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
+                continue;
+            }
+
+            Console.Write($"{indent}{indent}Starting connection...");
+            try
+            {
+                value.StartConnect();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Ok");
+                Console.ResetColor();
+            }
+            catch(Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {e.Message}");
+                Console.ResetColor();
+                continue;
+            }
+
+            value.StartListenInfo();
+
+            Console.Write($"{indent}{indent}Service has been started!");
+
+        }
+        Console.WriteLine("}");
+        IsStarted = true;
     }
     public void Stop()
     {
