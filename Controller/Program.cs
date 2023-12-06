@@ -4,22 +4,18 @@ namespace Controller;
 
 internal class Program
 {
-    private const string SettingFile = "services.setting"; 
-
-    private static Range portRange = new(41222, 41300);
-
-    private static Dictionary<ServiceNames, ServiceObject> services = new();
+    private static readonly ServiceManagement Management = new();
 
 
-    static void Main(string[] args)
+    private static void Main()
     {
         Console.Write("Loading...");
-        ReadFile();
+        Management.Load();
         Console.WriteLine();
 
         WriteTable.WriteHeader();
 
-        foreach ((ServiceNames _, ServiceObject value) in services)
+        foreach ((ServiceNames _, ServiceObject value) in Management.Services)
         {
             WriteTable.WriteRow(value.Name.ToString(), value.FullPath, value.Ip, value.AutoStart.ToString());
             WriteTable.WriteFill();
@@ -76,6 +72,8 @@ internal class Program
         Console.WriteLine("Ok");
         Console.ResetColor();
     }
+
+
 internal static class WriteTable
 {
     private const int NameLength = 20;
