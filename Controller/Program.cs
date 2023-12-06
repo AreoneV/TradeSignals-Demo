@@ -15,17 +15,23 @@ internal class Program
     {
         Console.Write("Loading...");
         ReadFile();
+        Console.WriteLine();
 
-        //вывести таблицу всех сервисов
-        //спросить начать прямо сейчас или хотите изменить настройки
+        WriteTable.WriteHeader();
 
-        Console.ReadLine();
+        foreach ((ServiceNames _, ServiceObject value) in services)
+        {
+            WriteTable.WriteRow(value.Name.ToString(), value.FullPath, value.Ip, value.AutoStart.ToString());
+            WriteTable.WriteFill();
+        }
 
+        Console.WriteLine();
+        Console.WriteLine("Status: stopped");
 
+        Console.WriteLine("If you need help enter '?' or 'help'");
+        Console.WriteLine("Enter command:");
 
-
-
-        Console.WriteLine("Hello, World!");
+        WhileCommand();
     }
 
 
