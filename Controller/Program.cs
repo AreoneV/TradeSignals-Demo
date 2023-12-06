@@ -31,47 +31,32 @@ internal class Program
     }
 
 
-    private static void ReadFile()
+    
+    private static void WhileCommand()
     {
-        foreach (var value in Enum.GetValues<ServiceNames>())
+        while (true)
         {
-            services.Add(value, new ServiceObject(value, "127.0.0.1", Directory.GetCurrentDirectory() + $"\\{value}.exe"));
-        }
-        if(!File.Exists(SettingFile))
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Ok");
-            Console.ResetColor();
-            return;
-        }
-
-        using FileStream fs = new FileStream(SettingFile, FileMode.Open, FileAccess.Read);
-        BinaryReader br = new BinaryReader(fs);
-
-        try
-        {
-            while(fs.Position < fs.Length)
+            var cmdLine = Console.ReadLine()?.Split(' ');
+            if (cmdLine == null)
             {
-                var name = (ServiceNames)br.ReadInt32();
-                var s = services[name];
-                s.Ip = br.ReadString();
-                s.FullPath = br.ReadString();
-                s.AutoStart = br.ReadBoolean();
+                continue;
+            }
+
+
+            var cmd = cmdLine[0];
+            switch(cmd)
+            {
+                case "exit":
+                    Management.Stop();
+                    return;
+                case "start":
+                    Management.Start();
+                    return;
             }
         }
-        catch
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("...Warning");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Error loading setting file!");
-            Console.ResetColor();
-            return;
-        }
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Ok");
-        Console.ResetColor();
     }
+    
+}
 
 
 internal static class WriteTable
