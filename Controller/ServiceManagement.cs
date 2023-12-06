@@ -7,13 +7,15 @@ namespace Controller;
 public class ServiceManagement
 {
     private const string SettingFile = "services.setting";
+    private const string LogFile = "logs.txt";
 
     private readonly Range portRange = new(41222, 41300);
     private readonly IPGlobalProperties ipGlobalProperties;
     private readonly Dictionary<ServiceNames, ServiceObject> services;
 
-    private Range portRange = new(41222, 41300);
-    private readonly Dictionary<ServiceNames, ServiceObject> services;
+    private readonly StreamWriter writer = new(LogFile, true);
+    private readonly List<string> logs = new();
+    private int maxLineLength = 1;
 
 
     public ServiceManagement()
@@ -81,6 +83,48 @@ public class ServiceManagement
         Console.WriteLine("Ok");
         Console.ResetColor();
     }
+
+
+    private void LogInfo(string msg)
+    {
+        var m = $"{DateTime.Now:G} | Info\t| {msg}";
+        writer.WriteLine(m);
+        writer.Flush();
+        if(m.Length > maxLineLength)
+        {
+            maxLineLength = m.Length;
+        }
+        logs.Add(msg);
+    }
+    private void LogWarning(string msg)
+    {
+        var m = $"{DateTime.Now:G} | Warning\t| {msg}";
+        writer.WriteLine(m);
+        writer.Flush();
+        if(m.Length > maxLineLength)
+        {
+            maxLineLength = m.Length;
+        }
+        logs.Add(msg);
+    }
+    private void LogError(string msg)
+    {
+        var m = $"{DateTime.Now:G} | Error\t| {msg}";
+        writer.WriteLine(m);
+        writer.Flush();
+        if(m.Length > maxLineLength)
+        {
+            maxLineLength = m.Length;
+        }
+        logs.Add(msg);
+    }
+    private void LogSplit()
+    {
+        writer.WriteLine(new string('_', maxLineLength));
+        writer.WriteLine();
+        writer.Flush();
+    }
+
     private int GetFreePort()
     {
         var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
