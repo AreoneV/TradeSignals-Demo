@@ -125,9 +125,8 @@ internal class Program
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                     Console.Write("[name] [new *.exe file]");
                     Console.ResetColor();
-                    Console.WriteLine(" - Service management. Stopping, Starting and Information");
-                    Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
-                    Console.WriteLine($"{empty}ping - check connection ping; info - resources information");
+                    Console.WriteLine(" - Service updating.");
+                    Console.WriteLine($"{empty}The first stopping old service and then move new service and starting.");
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
