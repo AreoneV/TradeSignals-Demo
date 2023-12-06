@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MarketInfo", "MarketInfo\Ma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controller", "Controller\Controller.csproj", "{5A41AE7F-337C-4617-BADC-FABF80F268BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Services.csproj", "{2FE8265B-5C22-4371-883B-AEC4D3D5ABB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{2FE8265B-5C22-4371-883B-AEC4D3D5ABB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestService", "TestService\TestService.csproj", "{17C44B99-8876-413C-8DDD-72A3BB22852C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{2FE8265B-5C22-4371-883B-AEC4D3D5ABB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FE8265B-5C22-4371-883B-AEC4D3D5ABB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FE8265B-5C22-4371-883B-AEC4D3D5ABB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17C44B99-8876-413C-8DDD-72A3BB22852C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17C44B99-8876-413C-8DDD-72A3BB22852C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17C44B99-8876-413C-8DDD-72A3BB22852C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17C44B99-8876-413C-8DDD-72A3BB22852C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
