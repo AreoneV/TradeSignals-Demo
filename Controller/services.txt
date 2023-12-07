@@ -1,0 +1,4 @@
+# file contains info about service IP, Path, AutoStart 
+# Format: [Service type name] [Full path] [IP] [Auto Start]
+# Service type names: MarketData, AI
+TestService D:\Projects\C#\TradeSignals-Demo\TestService\bin\Debug\net8.0-windows\TestService.exe 127.0.0.1 true

@@ -6,7 +6,7 @@ namespace Controller;
 
 public class ServiceManagement
 {
-    private const string SettingFile = "services.setting";
+    private const string SettingFile = "services.txt";
     private const string LogFile = "logs.txt";
 
     private readonly Range portRange = new(41222, 41300);
@@ -101,6 +101,8 @@ public class ServiceManagement
     }
 
 
+
+
     private void ReadFile()
     {
         foreach(var value in Enum.GetValues<ServiceNames>())
@@ -115,28 +117,25 @@ public class ServiceManagement
             return;
         }
 
-        using FileStream fs = new FileStream(SettingFile, FileMode.Open, FileAccess.Read);
-        BinaryReader br = new BinaryReader(fs);
+        using StreamReader r = new StreamReader(SettingFile);
 
-        try
+        while (!r.EndOfStream)
         {
-            while(fs.Position < fs.Length)
-            {
-                var name = (ServiceNames)br.ReadInt32();
-                var s = Services[name];
-                s.Ip = br.ReadString();
-                s.FullPath = br.ReadString();
-                s.AutoStart = br.ReadBoolean();
-            }
-        }
-        catch
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("...Warning");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Error loading setting file!");
-            Console.ResetColor();
-            return;
+            var line = r.ReadLine()?.Trim();
+            if (line == null) continue;
+            if(line.StartsWith("#")) continue;
+
+            var args = line.Split(' ');
+
+            if(args.Length != 4) continue;
+
+            if (!Enum.TryParse(typeof(ServiceNames), args[0], out object result)) continue;
+
+            var name = (ServiceNames)result;
+            var s = Services[name];
+            s.Ip = args[2];
+            s.FullPath = args[1];
+            s.AutoStart = !bool.TryParse(args[3], out bool auto) || auto;
         }
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Ok");
