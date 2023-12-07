@@ -1,106 +1,147 @@
 ﻿using System.Diagnostics;
 using Protocol;
+using Services;
 
 namespace Controller;
 
-public class ServiceObject(ServiceNames name, string ip, string fullPath)
+public class ServiceObject
 {
-    public ServiceNames Name { get; } = name;
-    public string FullPath { get; set; } = fullPath;
-    public string Ip { get; set; } = ip;
+    private bool isStartedListen;
+
+    public ServiceObject(ServiceNames name, string ip, string fullPath)
+    {
+        Name = name;
+        Ip = ip;
+        FullPath = fullPath;
+        EventServiceStatusChanged += OnEventServiceStatusChanged;
+    }
+
+    
+
+    public ServiceNames Name { get; }
+    public string FullPath { get; set; }
+    public string Ip { get; set; }
     public bool AutoStart { get; set; } = true;
-    public int Port { get; set; }
+    public int Port { get; private set; }
+
+    public int ExitCode { get; private set; }
 
     public Process Process { get; set; }
     public Client Client { get; set; }
 
 
+    public ServiceStatus Status { get; private set; } = ServiceStatus.NotWorking;
 
 
-    
+    public delegate void ServiceStatusDelegate(ServiceObject service, ServiceStatus status);
+
+    public event ServiceStatusDelegate EventServiceStatusChanged;
+
+
     public void StartProcess(int port)
     {
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Starting);
+
         Port = port;
 
         Process = Process.Start(FullPath, $"{Ip} {Port}");
 
         if (Process == null || (Process.WaitForExit(1000) && Process.HasExited))
         {
+            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
             throw new Exception("Service didn't start. Error starting process");
         }
     }
     public void StartConnect()
     {
         Client = new Client(Ip, Port);
-        Client.Connect();
+        try
+        {
+            Client.Connect();
+        }
+        catch
+        {
+            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
+            throw;
+        }
         Client.ClientDisconnected += ClientOnClientDisconnected;
     }
     public void StartListenInfo()
     {
         isStartedListen = true;
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
         Task.Run(() =>
         {
             while (isStartedListen)
             {
                 if (Process.HasExited)
                 {
-                    //if process closed
+                    Stop();
                 }
 
 
                 if(!Client.IsConnected)
                 {
-                    //stop and event
+                    Stop();
                     break;
                 }
 
                 try
                 {
-                    var a = Client.Request(new byte[100], 1000);
+                    Client.Request(new byte[100], 1000);
+                    if(Status !=  ServiceStatus.Ok)
+                        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
                 }
                 catch(TimeoutException)
                 {
-                    //not responding
+                    EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotResponding);
                 }
                 catch
                 {
-                    //close connection
+                    Stop();
                 }
             }
-
-            Console.WriteLine();
-            Console.WriteLine($"  Process exit code          : {Process.ExitCode}");
         });
     }
 
 
     public void Stop()
     {
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Stopping);
         isStartedListen = false;
         if (Client is { IsConnected: true })
         {
             try
             {
-                Client.Request(Array.Empty<byte>(), 1000);
+                Client.Request(new []{ (byte)128 }, 1000);
             }
             finally
             {
-            Client.Close();
-            Client = null;
-        }
+                Client.Close();
+            }
         }
 
         // ReSharper disable once InvertIf
         if(Process is { HasExited: false})
         {
-            Process.CloseMainWindow();
-            Process.Close();
-            Process = null;
+            try
+            {
+                if(!Process.WaitForExit(10000))
+                {
+                    Process.Kill();
+                }
+            }
+            catch
+            {
+                //ignored
+            }
+            
         }
+        ExitCode = Process.ExitCode;
+        Client = null;
+        Process = null;
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotWorking);
     }
-
-
-
 
     public void Ping()
     {
@@ -134,5 +175,12 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             
         }
     }
+    private void ClientOnClientDisconnected(Client client)
+    {
+        Stop();
+    }
+    private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
+    {
+        Status = status;
     }
 }
