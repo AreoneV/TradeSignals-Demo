@@ -94,4 +94,38 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
 
 
+
+    public void Ping()
+    {
+        if(Client is not { IsConnected: true })
+        {
+            Console.WriteLine("No connection!");
+            return;
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    var a = Client.Request(new byte[(i + 1) * 100], 100);
+                    sw.Stop();
+                    Console.WriteLine($"Ping {(i + 1) * 100} bytes --> {sw.Elapsed.TotalMilliseconds:F3} ms");
+                }
+                catch(TimeoutException)
+                {
+                    Console.WriteLine($"Ping {(i + 1) * 100} bytes --> >= 100 ms");
+                }
+                catch
+                {
+                    Console.WriteLine("Error connection!");
+                    return;
+                }
+            }
+            
+        }
+    }
+    }
 }
