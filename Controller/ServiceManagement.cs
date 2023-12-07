@@ -66,6 +66,7 @@ public class ServiceManagement
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
+                Console.WriteLine($"{indent}" + "}");
                 continue;
             }
 
@@ -82,13 +83,14 @@ public class ServiceManagement
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
+                Console.WriteLine($"{indent}" + "}");
                 continue;
             }
 
             value.StartListenInfo();
 
-            Console.Write($"{indent}{indent}Service has been started!");
-
+            Console.WriteLine($"{indent}{indent}Service has been started!");
+            Console.WriteLine($"{indent}" + "}");
         }
         Console.WriteLine("}");
         IsStarted = true;
