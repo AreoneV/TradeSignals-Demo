@@ -79,8 +79,15 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         isStartedListen = false;
         if (Client is { IsConnected: true })
         {
+            try
+            {
+                Client.Request(Array.Empty<byte>(), 1000);
+            }
+            finally
+            {
             Client.Close();
             Client = null;
+        }
         }
 
         // ReSharper disable once InvertIf
