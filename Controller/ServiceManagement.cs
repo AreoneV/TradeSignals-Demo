@@ -97,7 +97,17 @@ public class ServiceManagement
     }
     public void Stop()
     {
+        if (!IsStarted)
+        {
+            return;
+        }
 
+        foreach (var service in services)
+        {
+            service.Value.Stop();
+        }
+
+        IsStarted = true;
     }
 
 

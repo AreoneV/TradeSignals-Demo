@@ -55,6 +55,9 @@ internal class Program
                 case "exit":
                     Management.Stop();
                     return;
+                case "stop":
+                    Management.Stop();
+                    break;
                 case "start":
                     Management.Start();
                     break;
