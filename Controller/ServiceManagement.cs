@@ -122,7 +122,13 @@ public class ServiceManagement
 
         const int maxLen = 30;
 
-        Console.WriteLine("Status:");
+        Console.Write("Status: ");
+
+        Console.ForegroundColor = IsStarted ? ConsoleColor.Green : ConsoleColor.Red;
+
+        var status = IsStarted ? "Running" : "Stopped";
+        Console.WriteLine(status);
+        Console.ResetColor();
 
         var indent = new string(' ', 4);
 
