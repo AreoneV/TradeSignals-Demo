@@ -141,8 +141,9 @@ internal class Program
                             {
                                 s.CommonStart();
                             }
-                            catch
+                            catch(Exception ex)
                             {
+                                Console.WriteLine($"Error starting: {ex.Message}");
                                 //ignored
                             }
                             finally
