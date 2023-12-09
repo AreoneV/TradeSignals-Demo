@@ -8,6 +8,8 @@ public class ServiceObject
 {
     private bool isStartedListen;
 
+    private bool isNoramlStopping;
+
     public ServiceObject(ServiceNames name, string ip, string fullPath)
     {
         Name = name;
@@ -126,6 +128,7 @@ public class ServiceObject
 
     public void Stop()
     {
+        isStartedListen = true;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Stopping);
         isStartedListen = false;
         if (Client is { IsConnected: true })
@@ -136,7 +139,7 @@ public class ServiceObject
             }
             finally
             {
-                Client.Close();
+                Client?.Close();
             }
         }
 
@@ -160,10 +163,12 @@ public class ServiceObject
         Client = null;
         Process = null;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotWorking);
+        isNoramlStopping = false;
     }
 
     public void CriticalStopping()
     {
+        if(isNoramlStopping) { return; }
         isStartedListen = false;
         if(Client is { IsConnected: true })
         {
