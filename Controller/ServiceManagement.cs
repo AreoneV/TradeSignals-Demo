@@ -18,6 +18,8 @@ public class ServiceManagement
     private int maxLineLength = 1;
 
 
+    private int infoPositionRow;
+
     public ServiceManagement()
     {
         services = new Dictionary<ServiceNames, ServiceObject>();
@@ -94,6 +96,7 @@ public class ServiceManagement
         }
         Console.WriteLine("}");
         IsStarted = true;
+        WriteInfo();
     }
     public void Stop()
     {
@@ -111,13 +114,54 @@ public class ServiceManagement
     }
 
 
+    public void WriteInfo()
+    {
+        if(!IsStarted) { return; }
 
+        infoPositionRow = Console.GetCursorPosition().Top;
+
+        const int maxLen = 30;
+
+        Console.WriteLine("Status:");
+
+        var indent = new string(' ', 4);
+
+        foreach (var service in services)
+        {
+            Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
+            switch (service.Value.Status)
+            {
+                case ServiceStatus.Error:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+                case ServiceStatus.Warning:
+                case ServiceStatus.NotResponding:
+                case ServiceStatus.Stopping:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    break;
+                case ServiceStatus.NotWorking:
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    break;
+                case ServiceStatus.Ok:
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    break;
+                case ServiceStatus.Starting:
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            Console.WriteLine($"{service.Value.Status}");
+            Console.ResetColor();
+        }
+    }
 
     private void ReadFile()
     {
         foreach(var value in Enum.GetValues<ServiceNames>())
         {
             services.Add(value, new ServiceObject(value, "127.0.0.1", Directory.GetCurrentDirectory() + $"\\{value}.exe"));
+            services[value].EventServiceStatusChanged += OnEventServiceStatusChanged;
         }
         if(!File.Exists(SettingFile))
         {
@@ -150,6 +194,17 @@ public class ServiceManagement
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Ok");
         Console.ResetColor();
+    }
+
+    private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
+    {
+        if(!IsStarted) { return; }
+
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo();
+        Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
 
