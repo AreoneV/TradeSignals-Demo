@@ -126,6 +126,14 @@ public class ServiceManagement
         WriteInfo(true);
     }
 
+    public void Update()
+    {
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo(true);
+        Console.SetCursorPosition(pos.Left, pos.Top);
+    }
 
     public void WriteInfo(bool startIgnored)
     {
