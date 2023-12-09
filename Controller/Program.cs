@@ -144,7 +144,6 @@ internal class Program
                             catch(Exception ex)
                             {
                                 Console.WriteLine($"Error starting: {ex.Message}");
-                                //ignored
                             }
                             finally
                             {

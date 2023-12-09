@@ -51,7 +51,7 @@ public class ServiceManagement
             if (!File.Exists(value.FullPath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not fount!");
+                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not found!");
                 Console.ResetColor();
                 Console.WriteLine($"{indent}" + "}");
                 continue;
