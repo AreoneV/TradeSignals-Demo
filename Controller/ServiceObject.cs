@@ -8,8 +8,9 @@ public class ServiceObject
 {
     private bool isStartedListen;
 
-    private bool isNoramlStopping;
+    private bool isNormalStopping;
 
+    private bool checkPing;
     public ServiceObject(ServiceNames name, string ip, string fullPath)
     {
         Name = name;
@@ -109,6 +110,11 @@ public class ServiceObject
 
                 try
                 {
+                    if (checkPing)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
                     Client.Request(new byte[100], 1000);
                     if(Status !=  ServiceStatus.Ok)
                         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
@@ -125,10 +131,10 @@ public class ServiceObject
         });
     }
 
-
+    
     public void Stop()
     {
-        isStartedListen = true;
+        isNormalStopping = true;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Stopping);
         isStartedListen = false;
         if (Client is { IsConnected: true })
@@ -163,12 +169,12 @@ public class ServiceObject
         Client = null;
         Process = null;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotWorking);
-        isNoramlStopping = false;
+        isNormalStopping = false;
     }
 
     public void CriticalStopping()
     {
-        if(isNoramlStopping) { return; }
+        if(isNormalStopping) { return; }
         isStartedListen = false;
         if(Client is { IsConnected: true })
         {
@@ -225,6 +231,8 @@ public class ServiceObject
             return;
         }
 
+        checkPing = true;
+
         for (int i = 0; i < 10; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -248,6 +256,8 @@ public class ServiceObject
             }
             
         }
+
+        checkPing = false;
     }
     private void ClientOnClientDisconnected(Client client)
     {
