@@ -55,6 +55,9 @@ internal class Program
                 case "exit":
                     Management.Stop();
                     return;
+                case "stop":
+                    Management.Stop();
+                    break;
                 case "start":
                     Management.Start();
                     break;
@@ -74,38 +77,12 @@ internal class Program
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}name");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Show service names.");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.Write($"{empty}log");
                     Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                     Console.Write(" [count logs]");
                     Console.ResetColor();
                     Console.WriteLine(" - Show last logs. Example: log 20 - Show last 20 logs. If not enter number, show last 10 logs.");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}change ");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.Write(" [name] [property] [new value]");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Changing service property.");
-                    Console.WriteLine($"{empty}Properties: Ip = '-n', Path = '-p', Auto Start = '-as'.");
-                    Console.WriteLine($"{empty}Path writes \"C:\\Folder\\File.exe\"; IP writes 127.0.0.1; Boolean writes true, false");
-                    Console.WriteLine($"{empty}Example: change MarketData -n 192.168.2.21 (change ip address);");
-                    Console.WriteLine($"{empty}Example: change AI -p \"C:\\MainFolder\\Folder2\\Service\\AI.exe (change path to executable file)\"");
-                    Console.WriteLine($"{empty}Example: change DB -as false (change auto start)");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}monitor");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Monitoring of services info.");
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -116,18 +93,7 @@ internal class Program
                     Console.ResetColor();
                     Console.WriteLine(" - Service management. Stopping, Starting and Information");
                     Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
-                    Console.WriteLine($"{empty}ping - check connection ping; info - resources information");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}update ");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.Write("[name] [new *.exe file]");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Service management. Stopping, Starting and Information");
-                    Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
-                    Console.WriteLine($"{empty}ping - check connection ping; info - resources information");
+                    Console.WriteLine($"{empty}ping - check connection ping");
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -142,6 +108,60 @@ internal class Program
                     Console.WriteLine(" - Stopping and exiting of all.");
                     Console.WriteLine();
 
+                    break;
+                case "clear":
+                    Management.Clear();
+                    break;
+                case "service":
+
+                    if (!Management.IsStarted)
+                    {
+                        Console.WriteLine("Controller is stopped.");
+                        break;
+                    }
+
+                    if (cmdLine.Length < 3)
+                    {
+                        Console.WriteLine("Invalid command. Try again.");
+                        break;
+                    }
+
+                    if (!Enum.TryParse(cmdLine[1], out ServiceNames name))
+                    {
+                        Console.WriteLine("Wrong service name. Try again.");
+                        break;
+                    }
+
+                    var s = Management.Services[name];
+
+                    switch (cmdLine[2])
+                    {
+                        case "start":
+                            try
+                            {
+                                s.CommonStart();
+                            }
+                            catch(Exception ex)
+                            {
+                                Console.WriteLine($"Error starting: {ex.Message}");
+                            }
+                            finally
+                            {
+                                Management.Update();
+                            }
+                            break;
+                        case "stop":
+                            s.Stop();
+                            break;
+                        case "ping":
+                            s.Ping();
+                            break;
+                        default:
+                            Console.WriteLine("Invalid service command. Try again.");
+                            break;
+                    }
+                    break;
+                case "log":
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.Red;

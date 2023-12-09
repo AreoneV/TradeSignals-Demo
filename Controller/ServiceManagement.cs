@@ -6,7 +6,7 @@ namespace Controller;
 
 public class ServiceManagement
 {
-    private const string SettingFile = "services.setting";
+    private const string SettingFile = "services.txt";
     private const string LogFile = "logs.txt";
 
     private readonly Range portRange = new(41222, 41300);
@@ -17,6 +17,8 @@ public class ServiceManagement
     private readonly List<string> logs = new();
     private int maxLineLength = 1;
 
+
+    private int infoPositionRow;
 
     public ServiceManagement()
     {
@@ -36,6 +38,8 @@ public class ServiceManagement
     {
         if(IsStarted) return;
 
+        Console.Clear();
+
         Console.WriteLine("Starting services:");
         Console.WriteLine("{");
 
@@ -47,7 +51,7 @@ public class ServiceManagement
             if (!File.Exists(value.FullPath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not fount!");
+                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not found!");
                 Console.ResetColor();
                 Console.WriteLine($"{indent}" + "}");
                 continue;
@@ -66,6 +70,7 @@ public class ServiceManagement
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
+                Console.WriteLine($"{indent}" + "}");
                 continue;
             }
 
@@ -82,28 +87,109 @@ public class ServiceManagement
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Error: {e.Message}");
                 Console.ResetColor();
+                Console.WriteLine($"{indent}" + "}");
                 continue;
             }
 
             value.StartListenInfo();
 
-            Console.Write($"{indent}{indent}Service has been started!");
-
+            Console.WriteLine($"{indent}{indent}Service has been started!");
+            Console.WriteLine($"{indent}" + "}");
         }
         Console.WriteLine("}");
         IsStarted = true;
+        WriteInfo(false);
     }
     public void Stop()
     {
+        if (!IsStarted)
+        {
+            return;
+        }
+        IsStarted = false;
 
+        foreach (var service in services)
+        {
+            service.Value.Stop();
+        }
+
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo(true);
+        Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
+    public void Clear()
+    {
+        Console.Clear();
+        WriteInfo(true);
+    }
+
+    public void Update()
+    {
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo(true);
+        Console.SetCursorPosition(pos.Left, pos.Top);
+    }
+
+    public void WriteInfo(bool startIgnored)
+    {
+        if(!IsStarted && !startIgnored) { return; }
+
+        infoPositionRow = Console.GetCursorPosition().Top;
+
+        const int maxLen = 30;
+
+        Console.Write("Status: ");
+
+        Console.ForegroundColor = IsStarted ? ConsoleColor.Green : ConsoleColor.Red;
+
+        var status = IsStarted ? "Running" : "Stopped";
+        Console.WriteLine(status);
+        Console.ResetColor();
+
+        var indent = new string(' ', 4);
+
+        foreach (var service in services)
+        {
+            Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
+            switch (service.Value.Status)
+            {
+                case ServiceStatus.Error:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+                case ServiceStatus.Warning:
+                case ServiceStatus.NotResponding:
+                case ServiceStatus.Stopping:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    break;
+                case ServiceStatus.NotWorking:
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    break;
+                case ServiceStatus.Ok:
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    break;
+                case ServiceStatus.Starting:
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            Console.Write($"{service.Value.Status}");
+            Console.WriteLine(new string(' ', 20));
+            Console.ResetColor();
+        }
+    }
 
     private void ReadFile()
     {
         foreach(var value in Enum.GetValues<ServiceNames>())
         {
             services.Add(value, new ServiceObject(value, "127.0.0.1", Directory.GetCurrentDirectory() + $"\\{value}.exe"));
+            services[value].EventServiceStatusChanged += OnEventServiceStatusChanged;
         }
         if(!File.Exists(SettingFile))
         {
@@ -113,32 +199,40 @@ public class ServiceManagement
             return;
         }
 
-        using FileStream fs = new FileStream(SettingFile, FileMode.Open, FileAccess.Read);
-        BinaryReader br = new BinaryReader(fs);
+        using StreamReader r = new StreamReader(SettingFile);
 
-        try
+        while (!r.EndOfStream)
         {
-            while(fs.Position < fs.Length)
-            {
-                var name = (ServiceNames)br.ReadInt32();
-                var s = Services[name];
-                s.Ip = br.ReadString();
-                s.FullPath = br.ReadString();
-                s.AutoStart = br.ReadBoolean();
-            }
-        }
-        catch
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("...Warning");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Error loading setting file!");
-            Console.ResetColor();
-            return;
+            var line = r.ReadLine()?.Trim();
+            if (line == null) continue;
+            if(line.StartsWith("#")) continue;
+
+            var args = line.Split(' ');
+
+            if(args.Length != 4) continue;
+
+            if (!Enum.TryParse(typeof(ServiceNames), args[0], out object result)) continue;
+
+            var name = (ServiceNames)result;
+            var s = Services[name];
+            s.Ip = args[2];
+            s.FullPath = args[1];
+            s.AutoStart = !bool.TryParse(args[3], out bool auto) || auto;
         }
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Ok");
         Console.ResetColor();
+    }
+
+    private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
+    {
+        if(!IsStarted) { return; }
+
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo(false);
+        Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
 
