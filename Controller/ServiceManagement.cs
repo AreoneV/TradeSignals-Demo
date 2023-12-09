@@ -38,6 +38,8 @@ public class ServiceManagement
     {
         if(IsStarted) return;
 
+        Console.Clear();
+
         Console.WriteLine("Starting services:");
         Console.WriteLine("{");
 
@@ -116,6 +118,12 @@ public class ServiceManagement
 
         WriteInfo(true);
         Console.SetCursorPosition(pos.Left, pos.Top);
+    }
+
+    public void Clear()
+    {
+        Console.Clear();
+        WriteInfo(true);
     }
 
 
