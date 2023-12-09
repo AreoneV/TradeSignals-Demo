@@ -76,13 +76,13 @@ public class ServiceObject
             {
                 if (Process.HasExited)
                 {
-                    Stop();
+                    CriticalStopping();
                 }
 
 
                 if(!Client.IsConnected)
                 {
-                    Stop();
+                    CriticalStopping();
                     break;
                 }
 
@@ -98,7 +98,7 @@ public class ServiceObject
                 }
                 catch
                 {
-                    Stop();
+                    CriticalStopping();
                 }
             }
         });
@@ -137,11 +137,49 @@ public class ServiceObject
             }
             
         }
-        ExitCode = Process.ExitCode;
+        ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotWorking);
     }
+
+    public void CriticalStopping()
+    {
+        isStartedListen = false;
+        if(Client is { IsConnected: true })
+        {
+            try
+            {
+                Client.Request(new[] { (byte)128 }, 1000);
+            }
+            finally
+            {
+                Client.Close();
+            }
+        }
+
+        // ReSharper disable once InvertIf
+        if(Process is { HasExited: false })
+        {
+            try
+            {
+                if(!Process.WaitForExit(10000))
+                {
+                    Process.Kill();
+                }
+            }
+            catch
+            {
+                //ignored
+            }
+
+        }
+        ExitCode = Process?.ExitCode ?? ExitCode;
+        Client = null;
+        Process = null;
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
+    }
+
 
     public void Ping()
     {
@@ -177,7 +215,7 @@ public class ServiceObject
     }
     private void ClientOnClientDisconnected(Client client)
     {
-        Stop();
+        CriticalStopping();
     }
     private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
     {
