@@ -86,12 +86,6 @@ internal class Program
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}monitor");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Monitoring of services info.");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.Write($"{empty}service ");
                     Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -100,16 +94,6 @@ internal class Program
                     Console.WriteLine(" - Service management. Stopping, Starting and Information");
                     Console.WriteLine($"{empty}stop - stopping the service; start - starting the service");
                     Console.WriteLine($"{empty}ping - check connection ping");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}update ");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.Write("[name] [new *.exe file]");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Service updating.");
-                    Console.WriteLine($"{empty}The first stopping old service and then move new service and starting.");
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
@@ -124,6 +108,9 @@ internal class Program
                     Console.WriteLine(" - Stopping and exiting of all.");
                     Console.WriteLine();
 
+                    break;
+                case "clear":
+                    Management.Clear();
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.Red;
