@@ -141,6 +141,10 @@ internal class Program
                             {
                                 s.CommonStart();
                             }
+                            catch
+                            {
+                                //ignored
+                            }
                             finally
                             {
                                 Management.Update();
