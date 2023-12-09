@@ -204,9 +204,16 @@ public class ServiceObject
         Process = null;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
         Thread.Sleep(1000);
-        if (AutoStart)
-        {
+        if (!AutoStart) return;
 
+        try
+        {
+            CommonStart();
+            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
+        }
+        catch
+        {
+            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
         }
     }
 
@@ -226,7 +233,7 @@ public class ServiceObject
                 var sw = Stopwatch.StartNew();
                 try
                 {
-                    var a = Client.Request(new byte[(i + 1) * 100], 100);
+                    Client.Request(new byte[(i + 1) * 100], 100);
                     sw.Stop();
                     Console.WriteLine($"Ping {(i + 1) * 100} bytes --> {sw.Elapsed.TotalMilliseconds:F3} ms");
                 }
