@@ -112,6 +112,39 @@ internal class Program
                 case "clear":
                     Management.Clear();
                     break;
+                case "service":
+                    if (cmdLine.Length < 3)
+                    {
+                        Console.WriteLine("Invalid command. Try again.");
+                        break;
+                    }
+
+                    if (!Enum.TryParse(cmdLine[1], out ServiceNames name))
+                    {
+                        Console.WriteLine("Wrong service name. Try again.");
+                        break;
+                    }
+
+                    var s = Management.Services[name];
+
+                    switch (cmdLine[2])
+                    {
+                        case "start":
+                            //todo
+                            break;
+                        case "stop":
+                            s.Stop();
+                            break;
+                        case "ping":
+                            s.Ping();
+                            break;
+                        default:
+                            Console.WriteLine("Invalid service command. Try again.");
+                            break;
+                    }
+                    break;
+                case "log":
+                    break;
                 default:
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Wrong command! Enter '?' or 'help'.");
