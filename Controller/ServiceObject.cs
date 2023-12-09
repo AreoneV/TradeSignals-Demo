@@ -43,6 +43,8 @@ public class ServiceObject
 
     public void CommonStart()
     {
+        if(Status == ServiceStatus.Ok) return;
+
         if(!File.Exists(FullPath))
         {
             throw new FileNotFoundException();
