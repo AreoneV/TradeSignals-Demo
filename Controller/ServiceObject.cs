@@ -96,6 +96,12 @@ public class ServiceObject
         {
             while (isStartedListen)
             {
+                if(checkPing)
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
                 if (Process.HasExited)
                 {
                     CriticalStopping();
@@ -110,12 +116,10 @@ public class ServiceObject
 
                 try
                 {
-                    if (checkPing)
+                    lock (Client)
                     {
-                        Thread.Sleep(100);
-                        continue;
+                        Client.Request(new byte[100], 1000);
                     }
-                    Client.Request(new byte[100], 1000);
                     if(Status !=  ServiceStatus.Ok)
                         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
                 }
@@ -240,7 +244,10 @@ public class ServiceObject
                 var sw = Stopwatch.StartNew();
                 try
                 {
-                    Client.Request(new byte[(i + 1) * 100], 100);
+                    lock(Client)
+                    {
+                        Client.Request(new byte[(i + 1) * 100], 100); 
+                    }
                     sw.Stop();
                     Console.WriteLine($"Ping {(i + 1) * 100} bytes --> {sw.Elapsed.TotalMilliseconds:F3} ms");
                 }
