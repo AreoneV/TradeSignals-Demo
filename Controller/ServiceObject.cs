@@ -38,6 +38,19 @@ public class ServiceObject
     public event ServiceStatusDelegate EventServiceStatusChanged;
 
 
+    public void CommonStart()
+    {
+        if(!File.Exists(FullPath))
+        {
+            throw new FileNotFoundException();
+        }
+
+        StartProcess(Port);
+        StartConnect();
+        StartListenInfo();
+    }
+
+
     public void StartProcess(int port)
     {
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Starting);
@@ -79,6 +92,7 @@ public class ServiceObject
     }
     public void StartListenInfo()
     {
+        if(isStartedListen) { return; }
         isStartedListen = true;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
         Task.Run(() =>
@@ -189,6 +203,11 @@ public class ServiceObject
         Client = null;
         Process = null;
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
+        Thread.Sleep(1000);
+        if (AutoStart)
+        {
+
+        }
     }
 
 
