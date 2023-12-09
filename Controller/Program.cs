@@ -143,7 +143,7 @@ internal class Program
                             }
                             finally
                             {
-                                Management.WriteInfo(true);
+                                Management.Update();
                             }
                             break;
                         case "stop":
