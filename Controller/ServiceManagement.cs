@@ -120,6 +120,27 @@ public class ServiceManagement
         Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
+    public void SendUpdate()
+    {
+        if (!IsStarted) { return;}
+
+        using var ms = new MemoryStream();
+        var w = new BinaryWriter(ms);
+        foreach ((ServiceNames key, ServiceObject value) in services)
+        {
+            w.Write((int)key);
+            w.Write(value.Ip);
+            w.Write(value.Port);
+            w.Write(value.Status == ServiceStatus.Ok);
+        }
+        var data = ms.ToArray();
+        w.Close();
+
+        foreach((ServiceNames _, ServiceObject value) in services)
+        {
+            value.SendUpdate(data);
+        }
+    }
     public void Clear()
     {
         Console.Clear();
