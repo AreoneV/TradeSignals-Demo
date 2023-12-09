@@ -230,7 +230,7 @@ public class ServiceObject
 
     public void SendUpdate(byte[] data)
     {
-        if(Status != ServiceStatus.Ok) return;
+        if(Status != ServiceStatus.Ok || !Client.IsConnected) return;
         try
         {
             lock(Client)
