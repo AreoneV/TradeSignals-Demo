@@ -113,6 +113,13 @@ internal class Program
                     Management.Clear();
                     break;
                 case "service":
+
+                    if (!Management.IsStarted)
+                    {
+                        Console.WriteLine("Controller is stopped.");
+                        break;
+                    }
+
                     if (cmdLine.Length < 3)
                     {
                         Console.WriteLine("Invalid command. Try again.");
@@ -130,7 +137,14 @@ internal class Program
                     switch (cmdLine[2])
                     {
                         case "start":
-                            //todo
+                            try
+                            {
+                                s.CommonStart();
+                            }
+                            finally
+                            {
+                                Management.WriteInfo(true);
+                            }
                             break;
                         case "stop":
                             s.Stop();
