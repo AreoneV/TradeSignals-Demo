@@ -55,16 +55,10 @@ public class ServiceObject
     {
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Starting);
 
-        var runningProcesses = Process.GetProcesses();
-        foreach(Process process in runningProcesses)
+        var localByName = Process.GetProcessesByName($"{Name}");
+        foreach(Process p in localByName)
         {
-            foreach(ProcessModule module in process.Modules)
-            {
-                if(module.FileName.Equals($"{Name}.exe"))
-                {
-                    process.Kill();
-                }
-            }
+            p.Kill();
         }
 
         Port = port;
