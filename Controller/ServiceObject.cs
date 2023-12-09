@@ -228,6 +228,25 @@ public class ServiceObject
         }
     }
 
+    public void SendUpdate(byte[] data)
+    {
+        if(Status != ServiceStatus.Ok) return;
+        try
+        {
+            lock(Client)
+            {
+                Client.Request(data);
+            }
+        }
+        catch(TimeoutException)
+        {
+            EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotResponding);
+        }
+        catch
+        {
+            CriticalStopping();
+        }
+    }
 
     public void Ping()
     {
