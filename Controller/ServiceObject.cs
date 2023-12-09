@@ -42,15 +42,26 @@ public class ServiceObject
     {
         EventServiceStatusChanged?.Invoke(this, ServiceStatus.Starting);
 
+        var runningProcesses = Process.GetProcesses();
+        foreach(Process process in runningProcesses)
+        {
+            foreach(ProcessModule module in process.Modules)
+            {
+                if(module.FileName.Equals($"{Name}.exe"))
+                {
+                    process.Kill();
+                }
+            }
+        }
+
         Port = port;
 
         Process = Process.Start(FullPath, $"{Ip} {Port}");
 
-        if (Process == null || (Process.WaitForExit(1000) && Process.HasExited))
-        {
-            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
-            throw new Exception("Service didn't start. Error starting process");
-        }
+        if (Process != null && (!Process.WaitForExit(1000) || !Process.HasExited)) return;
+
+        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
+        throw new Exception("Service didn't start. Error starting process");
     }
     public void StartConnect()
     {
