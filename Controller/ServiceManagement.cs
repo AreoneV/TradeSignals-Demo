@@ -96,7 +96,7 @@ public class ServiceManagement
         }
         Console.WriteLine("}");
         IsStarted = true;
-        WriteInfo();
+        WriteInfo(false);
     }
     public void Stop()
     {
@@ -104,19 +104,24 @@ public class ServiceManagement
         {
             return;
         }
+        IsStarted = false;
 
         foreach (var service in services)
         {
             service.Value.Stop();
         }
 
-        IsStarted = true;
+        var pos = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, infoPositionRow);
+
+        WriteInfo(true);
+        Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
 
-    public void WriteInfo()
+    public void WriteInfo(bool startIgnored)
     {
-        if(!IsStarted) { return; }
+        if(!IsStarted && !startIgnored) { return; }
 
         infoPositionRow = Console.GetCursorPosition().Top;
 
@@ -157,7 +162,8 @@ public class ServiceManagement
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            Console.WriteLine($"{service.Value.Status}");
+            Console.Write($"{service.Value.Status}");
+            Console.WriteLine(new string(' ', 20));
             Console.ResetColor();
         }
     }
@@ -209,7 +215,7 @@ public class ServiceManagement
         var pos = Console.GetCursorPosition();
         Console.SetCursorPosition(0, infoPositionRow);
 
-        WriteInfo();
+        WriteInfo(false);
         Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
