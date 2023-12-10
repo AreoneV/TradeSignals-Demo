@@ -28,22 +28,14 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public bool IsRunning { get; set; }
 
 
-    public void CommonStart()
+    public bool Start(int port)
     {
+        if(IsRunning) { return true; }
 
         if(!File.Exists(FullPath))
         {
-            throw new FileNotFoundException();
+            return false;
         }
-
-        StartProcess(Port);
-        StartConnect();
-        StartListenInfo();
-    }
-
-
-    public void StartProcess(int port)
-    {
 
         var localByName = Process.GetProcessesByName($"{Name}");
         foreach(Process p in localByName)
@@ -53,24 +45,40 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
         Port = port;
 
-        Process = Process.Start(FullPath, $"{Ip} {Port}");
+        Process = Process.Start(FullPath, $"{Ip} {Port}")!;
 
-        if (Process != null && (!Process.WaitForExit(1000) || !Process.HasExited)) return;
-
-        throw new Exception("Service didn't start. Error starting process");
-    }
-    public void StartConnect()
-    {
         Client = new Client(Ip, Port);
-        try
+
+        int attempts = 5;
+
+        do
         {
-            Client.Connect();
-        }
-        catch
-        {
-            throw;
-        }
+            try
+            {
+                Client.Connect();
+                break;
+            }
+            catch
+            {
+                if (Process.HasExited)
+                {
+                    Stop();
+                    return false;
+                }
+                attempts--;
+            }
+            Thread.Sleep(1000);
+        } while (attempts > 0);
+
+
+        if (Client.IsConnected) return true;
+
+
+        Stop();
+        return false;
     }
+
+
     public void StartListenInfo()
     {
         if(isStartedListen) { return; }
