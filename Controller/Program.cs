@@ -23,7 +23,7 @@ internal class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine("Status: stopped");
+        Management.WriteInfo();
 
         Console.WriteLine("If you need help enter '?' or 'help'");
         
@@ -139,7 +139,7 @@ internal class Program
                         case "start":
                             try
                             {
-                                s.CommonStart();
+                                //s.CommonStart();
                             }
                             catch(Exception ex)
                             {
