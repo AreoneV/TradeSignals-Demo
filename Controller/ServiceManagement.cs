@@ -40,7 +40,7 @@ public class ServiceManagement
 
         Console.ForegroundColor = ConsoleColor.Yellow;
 
-        Console.WriteLine("Starting...");
+        Console.WriteLine("Wait...");
         Console.ResetColor();
 
         var indent = new string(' ', 4);
