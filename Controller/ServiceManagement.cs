@@ -86,14 +86,26 @@ public class ServiceManagement
             w.Write((int)key);
             w.Write(value.Ip);
             w.Write(value.Port);
-            w.Write(value.Status == ServiceStatus.Ok);
+            w.Write(value.IsRunning);
         }
         var data = ms.ToArray();
         w.Close();
 
         foreach((ServiceNames _, ServiceObject value) in services)
         {
-            value.SendUpdate(data);
+            if (!value.CheckRunning()) continue;
+            try
+            {
+                lock (value.Client)
+                {
+                    value.Client.Request(data, 1000);
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
         }
     }
     public void Clear()
