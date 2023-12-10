@@ -49,7 +49,7 @@ public class ServiceManagement
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
             var stat = service.Value.Start(GetFreePort()) ? "Running" : "Stopped";
             Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
-            Console.Write($"{stat}");
+            Console.WriteLine($"{stat}");
             Console.ResetColor();
         }
 
@@ -141,7 +141,7 @@ public class ServiceManagement
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
             var stat = service.Value.IsRunning ? "Running" : "Stopped";
             Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
-            Console.Write($"{stat}");
+            Console.WriteLine($"{stat}");
             Console.ResetColor();
         }
     }
