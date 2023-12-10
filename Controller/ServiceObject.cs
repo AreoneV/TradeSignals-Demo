@@ -4,25 +4,18 @@ using Services;
 
 namespace Controller;
 
-public class ServiceObject
+public class ServiceObject(ServiceNames name, string ip, string fullPath)
 {
     private bool isStartedListen;
 
     private bool isNormalStopping;
 
     private bool checkPing;
-    public ServiceObject(ServiceNames name, string ip, string fullPath)
-    {
-        Name = name;
-        Ip = ip;
-        FullPath = fullPath;
-    }
 
-    
 
-    public ServiceNames Name { get; }
-    public string FullPath { get; set; }
-    public string Ip { get; set; }
+    public ServiceNames Name { get; } = name;
+    public string FullPath { get; set; } = fullPath;
+    public string Ip { get; set; } = ip;
     public bool AutoStart { get; set; } = true;
     public int Port { get; private set; }
 
