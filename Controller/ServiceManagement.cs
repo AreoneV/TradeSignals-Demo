@@ -52,10 +52,11 @@ public class ServiceManagement
             Console.Write($"{stat}");
             Console.ResetColor();
         }
-        
-        Checking();
 
         IsStarted = true;
+
+        Checking();
+
         WriteInfo();
     }
     public void Stop()
@@ -177,7 +178,23 @@ public class ServiceManagement
     {
         Task.Run(() =>
         {
+            while (IsStarted)
+            {
+                bool changed = false;
+                foreach (var o in services.Where(o => o.Value.IsRunning && !o.Value.CheckRunning() && o.Value.AutoStart))
+                {
+                    o.Value.Stop();
+                    if (o.Value.Start(GetFreePort())) continue;
+                    o.Value.IsRunning = false;
+                    changed = true;
+                }
 
+                if (changed)
+                {
+                    Update();
+                }
+                Thread.Sleep(1000);
+            }
         });
     }
 
