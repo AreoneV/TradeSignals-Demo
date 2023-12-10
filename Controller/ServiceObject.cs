@@ -71,8 +71,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         Stop();
         return false;
     }
-
-
     public bool CheckRunning()
     {
         
@@ -95,8 +93,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
         return true;
     }
-
-    
     public void Stop()
     {
         if (Client is { IsConnected: true })
@@ -132,71 +128,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         Process = null;
     }
 
-    public void CriticalStopping()
-    {
-        if(isNormalStopping) { return; }
-        isStartedListen = false;
-        if(Client is { IsConnected: true })
-        {
-            try
-            {
-                Client.Request(new[] { (byte)128 }, 1000);
-            }
-            finally
-            {
-                Client.Close();
-            }
-        }
-
-        // ReSharper disable once InvertIf
-        if(Process is { HasExited: false })
-        {
-            try
-            {
-                if(!Process.WaitForExit(10000))
-                {
-                    Process.Kill();
-                }
-            }
-            catch
-            {
-                //ignored
-            }
-
-        }
-        ExitCode = Process?.ExitCode ?? ExitCode;
-        Client = null;
-        Process = null;
-        Thread.Sleep(1000);
-        if (!AutoStart) return;
-
-        try
-        {
-            CommonStart();
-        }
-        catch
-        {
-        }
-    }
-
-    public void SendUpdate(byte[] data)
-    {
-        try
-        {
-            lock(Client)
-            {
-                Client.Request(data);
-            }
-        }
-        catch(TimeoutException)
-        {
-        }
-        catch
-        {
-            CriticalStopping();
-        }
-    }
-
     public void Ping()
     {
         if(Client is not { IsConnected: true })
@@ -205,7 +136,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             return;
         }
 
-        checkPing = true;
 
         for (int i = 0; i < 10; i++)
         {
@@ -233,7 +163,5 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             }
             
         }
-
-        checkPing = false;
     }
 }
