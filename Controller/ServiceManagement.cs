@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net.NetworkInformation;
 using Services;
 
@@ -47,7 +48,8 @@ public class ServiceManagement
         foreach(var service in services)
         {
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
-            var stat = service.Value.Start(GetFreePort()) ? "Running" : "Stopped";
+            service.Value.IsRunning = service.Value.Start(GetFreePort());
+            var stat = service.Value.IsRunning ? "Running" : "Stopped";
             Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
             Console.WriteLine($"{stat}");
             Console.ResetColor();
@@ -57,7 +59,7 @@ public class ServiceManagement
 
         Checking();
 
-        WriteInfo();
+        Update();
     }
     public void Stop()
     {
@@ -196,6 +198,7 @@ public class ServiceManagement
                 foreach (var o in services.Where(o => o.Value.IsRunning && !o.Value.CheckRunning() && o.Value.AutoStart))
                 {
                     o.Value.Stop();
+                    o.Value.IsRunning = false;
                     if (o.Value.Start(GetFreePort())) continue;
                     o.Value.IsRunning = false;
                     changed = true;

@@ -74,7 +74,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public bool CheckRunning()
     {
         
-        if(Process is not {HasExited: true} || Client is not { IsConnected: true })
+        if(Process == null || Process.HasExited || Client == null || Client.IsConnected == false)
         {
             return false;
         }
