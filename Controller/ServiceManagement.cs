@@ -30,10 +30,6 @@ public class ServiceManagement
     public ReadOnlyDictionary<ServiceNames, ServiceObject> Services { get; }
     public bool IsStarted { get; private set; }
 
-    public void Load()
-    {
-        ReadFile();
-    }
     public void Start()
     {
         if(IsStarted) return;
@@ -205,7 +201,7 @@ public class ServiceManagement
         }
     }
 
-    private void ReadFile()
+    public void Load()
     {
         foreach(var value in Enum.GetValues<ServiceNames>())
         {
