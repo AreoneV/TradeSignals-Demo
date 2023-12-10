@@ -33,66 +33,30 @@ public class ServiceManagement
         if(IsStarted) return;
 
         Console.Clear();
+        const int maxLen = 30;
 
-        Console.WriteLine("Starting services:");
-        Console.WriteLine("{");
+        Console.Write("Status: ");
 
-        foreach ((ServiceNames name, ServiceObject value) in services)
+        Console.ForegroundColor = ConsoleColor.Yellow;
+
+        Console.WriteLine("Starting...");
+        Console.ResetColor();
+
+        var indent = new string(' ', 4);
+
+        foreach(var service in services)
         {
-            var indent = new string(' ', 4);
-            Console.WriteLine($"{indent}{name}:");
-            Console.WriteLine($"{indent}" + "{");
-            if (!File.Exists(value.FullPath))
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{indent}{indent}Service will not be started. Executable file is not found!");
-                Console.ResetColor();
-                Console.WriteLine($"{indent}" + "}");
-                continue;
-            }
-
-            Console.Write($"{indent}{indent}Starting process...");
-            try
-            {
-                value.StartProcess(GetFreePort());
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Ok");
-                Console.ResetColor();
-            }
-            catch (Exception e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
-                Console.WriteLine($"{indent}" + "}");
-                continue;
-            }
-
-            Console.Write($"{indent}{indent}Starting connection...");
-            try
-            {
-                value.StartConnect();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Ok");
-                Console.ResetColor();
-            }
-            catch(Exception e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {e.Message}");
-                Console.ResetColor();
-                Console.WriteLine($"{indent}" + "}");
-                continue;
-            }
-
-            value.StartListenInfo();
-
-            Console.WriteLine($"{indent}{indent}Service has been started!");
-            Console.WriteLine($"{indent}" + "}");
+            Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
+            var stat = service.Value.Start(GetFreePort()) ? "Running" : "Stopped";
+            Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
+            Console.Write($"{stat}");
+            Console.ResetColor();
         }
-        Console.WriteLine("}");
+        
+        Checking();
+
         IsStarted = true;
-        WriteInfo(false);
+        WriteInfo();
     }
     public void Stop()
     {
@@ -107,11 +71,7 @@ public class ServiceManagement
             service.Value.Stop();
         }
 
-        var pos = Console.GetCursorPosition();
-        Console.SetCursorPosition(0, infoPositionRow);
-
-        WriteInfo(true);
-        Console.SetCursorPosition(pos.Left, pos.Top);
+        Update();
     }
 
     public void SendUpdate()
@@ -138,7 +98,7 @@ public class ServiceManagement
     public void Clear()
     {
         Console.Clear();
-        WriteInfo(true);
+        WriteInfo();
     }
 
     public void Update()
@@ -146,10 +106,9 @@ public class ServiceManagement
         var pos = Console.GetCursorPosition();
         Console.SetCursorPosition(0, 0);
 
-        WriteInfo(true);
+        WriteInfo();
         Console.SetCursorPosition(pos.Left, pos.Top);
     }
-
     public void WriteInfo()
     {
         const int maxLen = 30;
@@ -179,7 +138,6 @@ public class ServiceManagement
         foreach(var value in Enum.GetValues<ServiceNames>())
         {
             services.Add(value, new ServiceObject(value, "127.0.0.1", Directory.GetCurrentDirectory() + $"\\{value}.exe"));
-            services[value].EventServiceStatusChanged += OnEventServiceStatusChanged;
         }
         if(!File.Exists(SettingFile))
         {
@@ -214,17 +172,14 @@ public class ServiceManagement
         Console.ResetColor();
     }
 
-    private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
+
+    private void Checking()
     {
-        if(!IsStarted) { return; }
+        Task.Run(() =>
+        {
 
-        var pos = Console.GetCursorPosition();
-        Console.SetCursorPosition(0, infoPositionRow);
-
-        WriteInfo(false);
-        Console.SetCursorPosition(pos.Left, pos.Top);
+        });
     }
-
 
     private void LogInfo(string msg)
     {
