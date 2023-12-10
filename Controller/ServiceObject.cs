@@ -16,7 +16,6 @@ public class ServiceObject
         Name = name;
         Ip = ip;
         FullPath = fullPath;
-        EventServiceStatusChanged += OnEventServiceStatusChanged;
     }
 
     
@@ -33,17 +32,11 @@ public class ServiceObject
     public Client Client { get; set; }
 
 
-    public ServiceStatus Status { get; private set; } = ServiceStatus.NotWorking;
-
-
-    public delegate void ServiceStatusDelegate(ServiceObject service, ServiceStatus status);
-
-    public event ServiceStatusDelegate EventServiceStatusChanged;
+    public bool IsRunning { get; set; }
 
 
     public void CommonStart()
     {
-        if(Status == ServiceStatus.Ok) return;
 
         if(!File.Exists(FullPath))
         {
@@ -58,7 +51,6 @@ public class ServiceObject
 
     public void StartProcess(int port)
     {
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Starting);
 
         var localByName = Process.GetProcessesByName($"{Name}");
         foreach(Process p in localByName)
@@ -72,7 +64,6 @@ public class ServiceObject
 
         if (Process != null && (!Process.WaitForExit(1000) || !Process.HasExited)) return;
 
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
         throw new Exception("Service didn't start. Error starting process");
     }
     public void StartConnect()
@@ -84,16 +75,13 @@ public class ServiceObject
         }
         catch
         {
-            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
             throw;
         }
-        Client.ClientDisconnected += ClientOnClientDisconnected;
     }
     public void StartListenInfo()
     {
         if(isStartedListen) { return; }
         isStartedListen = true;
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
         Task.Run(() =>
         {
             while (isStartedListen)
@@ -122,12 +110,9 @@ public class ServiceObject
                     {
                         Client.Request(new byte[100], 1000);
                     }
-                    if(Status !=  ServiceStatus.Ok)
-                        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
                 }
                 catch(TimeoutException)
                 {
-                    EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotResponding);
                 }
                 catch
                 {
@@ -141,7 +126,6 @@ public class ServiceObject
     public void Stop()
     {
         isNormalStopping = true;
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Stopping);
         isStartedListen = false;
         if (Client is { IsConnected: true })
         {
@@ -174,7 +158,6 @@ public class ServiceObject
         ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotWorking);
         isNormalStopping = false;
     }
 
@@ -213,24 +196,20 @@ public class ServiceObject
         ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
-        EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
         Thread.Sleep(1000);
         if (!AutoStart) return;
 
         try
         {
             CommonStart();
-            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Ok);
         }
         catch
         {
-            EventServiceStatusChanged?.Invoke(this, ServiceStatus.Error);
         }
     }
 
     public void SendUpdate(byte[] data)
     {
-        if(Status != ServiceStatus.Ok || !Client.IsConnected) return;
         try
         {
             lock(Client)
@@ -240,7 +219,6 @@ public class ServiceObject
         }
         catch(TimeoutException)
         {
-            EventServiceStatusChanged?.Invoke(this, ServiceStatus.NotResponding);
         }
         catch
         {
@@ -286,13 +264,5 @@ public class ServiceObject
         }
 
         checkPing = false;
-    }
-    private void ClientOnClientDisconnected(Client client)
-    {
-        CriticalStopping();
-    }
-    private void OnEventServiceStatusChanged(ServiceObject service, ServiceStatus status)
-    {
-        Status = status;
     }
 }
