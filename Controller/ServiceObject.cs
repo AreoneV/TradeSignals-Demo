@@ -6,13 +6,7 @@ namespace Controller;
 
 public class ServiceObject(ServiceNames name, string ip, string fullPath)
 {
-    private bool isStartedListen;
-
-    private bool isNormalStopping;
-
-    private bool checkPing;
-
-
+    
     public ServiceNames Name { get; } = name;
     public string FullPath { get; set; } = fullPath;
     public string Ip { get; set; } = ip;
@@ -79,55 +73,32 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     }
 
 
-    public void StartListenInfo()
+    public bool CheckRunning()
     {
-        if(isStartedListen) { return; }
-        isStartedListen = true;
-        Task.Run(() =>
+        
+        if(Process is not {HasExited: true} || Client is not { IsConnected: true })
         {
-            while (isStartedListen)
+            return false;
+        }
+
+        try
+        {
+            lock(Client)
             {
-                if(checkPing)
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
-
-                if (Process.HasExited)
-                {
-                    CriticalStopping();
-                }
-
-
-                if(!Client.IsConnected)
-                {
-                    CriticalStopping();
-                    break;
-                }
-
-                try
-                {
-                    lock (Client)
-                    {
-                        Client.Request(new byte[100], 1000);
-                    }
-                }
-                catch(TimeoutException)
-                {
-                }
-                catch
-                {
-                    CriticalStopping();
-                }
+                Client.Request(new byte[100], 1000);
             }
-        });
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
     }
 
     
     public void Stop()
     {
-        isNormalStopping = true;
-        isStartedListen = false;
         if (Client is { IsConnected: true })
         {
             try
@@ -159,7 +130,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
-        isNormalStopping = false;
     }
 
     public void CriticalStopping()
