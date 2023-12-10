@@ -18,8 +18,6 @@ public class ServiceManagement
     private int maxLineLength = 1;
 
 
-    private int infoPositionRow;
-
     public ServiceManagement()
     {
         services = new Dictionary<ServiceNames, ServiceObject>();
@@ -146,18 +144,14 @@ public class ServiceManagement
     public void Update()
     {
         var pos = Console.GetCursorPosition();
-        Console.SetCursorPosition(0, infoPositionRow);
+        Console.SetCursorPosition(0, 0);
 
         WriteInfo(true);
         Console.SetCursorPosition(pos.Left, pos.Top);
     }
 
-    public void WriteInfo(bool startIgnored)
+    public void WriteInfo()
     {
-        if(!IsStarted && !startIgnored) { return; }
-
-        infoPositionRow = Console.GetCursorPosition().Top;
-
         const int maxLen = 30;
 
         Console.Write("Status: ");
@@ -173,30 +167,9 @@ public class ServiceManagement
         foreach (var service in services)
         {
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
-            switch (service.Value.Status)
-            {
-                case ServiceStatus.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case ServiceStatus.Warning:
-                case ServiceStatus.NotResponding:
-                case ServiceStatus.Stopping:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case ServiceStatus.NotWorking:
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    break;
-                case ServiceStatus.Ok:
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    break;
-                case ServiceStatus.Starting:
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            Console.Write($"{service.Value.Status}");
-            Console.WriteLine(new string(' ', 20));
+            var stat = service.Value.IsRunning ? "Running" : "Stopped";
+            Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
+            Console.Write($"{stat}");
             Console.ResetColor();
         }
     }
