@@ -76,15 +76,6 @@ internal class Program
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.Write($"{empty}log");
-                    Console.ResetColor();
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.Write(" [count logs]");
-                    Console.ResetColor();
-                    Console.WriteLine(" - Show last logs. Example: log 20 - Show last 20 logs. If not enter number, show last 10 logs.");
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.Write($"{empty}service ");
                     Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -148,8 +139,6 @@ internal class Program
                             Console.WriteLine("Invalid service command. Try again.");
                             break;
                     }
-                    break;
-                case "log":
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.Red;
