@@ -11,24 +11,25 @@ internal class Program
     {
         Console.Title = "Service controller";
         Console.Write("Loading...");
+        //загружаем все настройки
         Management.Load();
         Console.WriteLine();
-
+        //выводим шапку о сервисах
         WriteTable.WriteHeader();
-
+        //выводим инфу о сервисах
         foreach ((ServiceNames _, ServiceObject value) in Management.Services)
         {
             WriteTable.WriteRow(value.Name.ToString(), value.FullPath, value.Ip, value.AutoStart.ToString());
             WriteTable.WriteFill();
         }
-
+        //выводим инфу о запуске
         Console.WriteLine();
         Management.WriteInfo();
-
+        //начинаем получать команды от пользователя
         Console.WriteLine("If you need help enter '?' or 'help'");
         Console.Write("Enter command:");
         WhileCommand();
-
+        //закрываем логгер
         ServiceManagement.LogClose();
     }
 
@@ -38,6 +39,7 @@ internal class Program
     {
         while (true)
         {
+            //получаем команду и делим ее на поля
             var cmdLine = Console.ReadLine()?.Split(' ');
             if (cmdLine == null)
             {
@@ -45,31 +47,35 @@ internal class Program
             }
 
             (int Left, int Top) pos = Console.GetCursorPosition();
-
+            //стираем команду из консоли
             Console.SetCursorPosition(0, pos.Top - 1);
             Console.WriteLine(new string(' ', 100));
             Console.SetCursorPosition(0, pos.Top - 1);
-
+            //проверяем команду
             var cmd = cmdLine[0];
             switch(cmd)
             {
                 case "exit":
+                    //если выход то останавливаем и выходим
                     ServiceManagement.LogInfo("Enter 'exit' command");
                     Management.Stop();
                     ServiceManagement.LogSplit();
                     return;
                 case "stop":
+                    //если остановка то просто останавливаем
                     ServiceManagement.LogInfo("Enter 'stop' command");
                     Management.Stop();
                     ServiceManagement.LogSplit();
                     break;
                 case "start":
+                    //если запуск то запускаем
                     ServiceManagement.LogInfo("Enter 'start' command");
                     Management.Start();
                     ServiceManagement.LogSplit();
                     break;
                 case "help":
                 case "?":
+                    //если команда помощь выведем инфу
                     var empty = new string(' ', 4);
                     Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.Write($"{empty}start");
@@ -108,51 +114,59 @@ internal class Program
 
                     break;
                 case "clear":
+                    //если очистить то очищаем
                     Management.Clear();
                     break;
                 case "service":
+                    //если команда обращения к сервису
 
+                    //если нет запуска
                     if (!Management.IsStarted)
                     {
                         Console.WriteLine("Controller is stopped.");
                         break;
                     }
-
+                    //если формат не соответствует
                     if (cmdLine.Length < 3)
                     {
                         Console.WriteLine("Invalid command. Try again.");
                         break;
                     }
-
+                    //если не верное имя
                     if (!Enum.TryParse(cmdLine[1], out ServiceNames name))
                     {
                         Console.WriteLine("Wrong service name. Try again.");
                         break;
                     }
-
+                    //получаем сервис
                     var s = Management.Services[name];
 
                     switch (cmdLine[2])
                     {
                         case "start":
+                            //если запуск сервиса то запускаем
                             ServiceManagement.LogInfo($"Enter '{cmdLine[0]} {cmdLine[1]} {cmdLine[2]}' command");
                             s.Start();
                             ServiceManagement.LogSplit();
                             break;
                         case "stop":
+                            //если остановка сервиса
                             ServiceManagement.LogInfo($"Enter '{cmdLine[0]} {cmdLine[1]} {cmdLine[2]}' command");
                             s.Stop();
                             ServiceManagement.LogSplit();
                             break;
                         case "ping":
+                            //если проверка ping
                             s.Ping();
                             break;
                         default:
+                            //если неверная команда
                             Console.WriteLine("Invalid service command. Try again.");
                             break;
                     }
                     break;
                 default:
+                    //если команда не распознана
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Wrong command! Enter '?' or 'help'.");
                     Console.ResetColor();
@@ -166,10 +180,17 @@ internal class Program
 
 internal static class WriteTable
 {
+    //длинна колонки имя
     private const int NameLength = 20;
+    //длинна колонки ip
     private const int IpLength = 16;
+    //длинна колонки пути
     private const int PathLength = 50;
+    //длинна колонки автозапуска
     private const int AutoStartLength = 12;
+    /// <summary>
+    /// Выводим шапку
+    /// </summary>
     public static void WriteHeader()
     {
         const ConsoleColor color = ConsoleColor.DarkCyan;
@@ -199,10 +220,20 @@ internal static class WriteTable
         Console.WriteLine(" |");
         WriteFill();
     }
+    /// <summary>
+    /// Выводим Линию
+    /// </summary>
     public static void WriteFill()
     {
         Console.WriteLine($"|{new string('-', NameLength)}|{new string('-', PathLength)}|{new string('-', IpLength)}|{new string('-', AutoStartLength)}|");
     }
+    /// <summary>
+    /// Выводим строку
+    /// </summary>
+    /// <param name="name">Имя</param>
+    /// <param name="path">Путь</param>
+    /// <param name="ip">IP</param>
+    /// <param name="autoStart">Автозапуск</param>
     public static void WriteRow(string name, string path, string ip, string autoStart)
     {
         var spaces = NameLength - name.Length - 1;
