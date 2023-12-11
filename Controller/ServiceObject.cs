@@ -22,6 +22,10 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public bool IsRunning { get; set; }
 
 
+    public delegate void RunningDelegate(ServiceObject service, bool status);
+    public event RunningDelegate EventRunningStatusChanged;
+
+
     public void Start(int port)
     {
         if(IsRunning) { return; }
@@ -73,7 +77,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         }
 
         IsRunning = true;
-
+        EventRunningStatusChanged?.Invoke(this, true);
         CheckRunning();
     }
 
@@ -112,6 +116,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         Client = null;
         Process = null;
         IsRunning = false;
+        EventRunningStatusChanged?.Invoke(this, false);
     }
 
     public void Ping()
@@ -155,6 +160,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     {
         Task.Run(() =>
         {
+            int countNotResponding = 0;
             while (IsRunning)
             {
                 if(Process == null || Process.HasExited || Client == null || Client.IsConnected == false)
@@ -166,10 +172,11 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                         if (!IsRunning)
                         {
                             //попытка перезапуска безуспешна
+                            Stop();
+                            return;
                         }
                     }
-
-                    IsRunning = false;
+                    Stop();
                     return;
                 }
 
@@ -178,11 +185,18 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                     lock(Client)
                     {
                         Client.Request(new byte[100], 1000);
+                        countNotResponding = 0;
                     }
                 }
                 catch
                 {
-                    //not responding
+                    if (countNotResponding == 10)
+                    {
+                        Stop();
+                        return;
+                    }
+
+                    countNotResponding++;
                 }
 
                 Thread.Sleep(100);
