@@ -1,6 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.Net.NetworkInformation;
 using Services;
 
 namespace Controller;
@@ -45,7 +43,7 @@ public class ServiceManagement
         foreach(var service in services)
         {
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
-            service.Value.IsRunning = service.Value.Start(GetFreePort());
+            service.Value.Start();
             var stat = service.Value.IsRunning ? "Running" : "Stopped";
             Console.ForegroundColor = service.Value.IsRunning ? ConsoleColor.Green : ConsoleColor.Yellow;
             Console.WriteLine($"{stat}");
@@ -54,7 +52,6 @@ public class ServiceManagement
 
         IsStarted = true;
 
-        Checking();
 
         Update();
     }
@@ -92,7 +89,7 @@ public class ServiceManagement
 
         foreach((ServiceNames _, ServiceObject value) in services)
         {
-            if (!value.CheckRunning()) continue;
+            if (!value.IsRunning) continue;
             try
             {
                 lock (value.Client)
@@ -150,6 +147,7 @@ public class ServiceManagement
         foreach(var value in Enum.GetValues<ServiceNames>())
         {
             services.Add(value, new ServiceObject(value, "127.0.0.1", Directory.GetCurrentDirectory() + $"\\{value}.exe"));
+            services[value].EventRunningStatusChanged += OnEventRunningStatusChanged;
         }
         if(!File.Exists(SettingFile))
         {
@@ -184,31 +182,14 @@ public class ServiceManagement
         Console.ResetColor();
     }
 
-
-    private void Checking()
+    private void OnEventRunningStatusChanged(ServiceObject service, bool status)
     {
-        Task.Run(() =>
-        {
-            while (IsStarted)
-            {
-                bool changed = false;
-                foreach (var o in services.Where(o => o.Value.IsRunning && !o.Value.CheckRunning() && o.Value.AutoStart))
-                {
-                    o.Value.Stop();
-                    o.Value.IsRunning = false;
-                    if (o.Value.Start(GetFreePort())) continue;
-                    o.Value.IsRunning = false;
-                    changed = true;
-                }
+        if(!IsStarted) return;
 
-                if (changed)
-                {
-                    Update();
-                }
-                Thread.Sleep(1000);
-            }
-        });
+        Update();
+        SendUpdate();
     }
+
 
     private void LogInfo(string msg)
     {
