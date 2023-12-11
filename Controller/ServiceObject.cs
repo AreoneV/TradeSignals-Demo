@@ -74,33 +74,12 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
         IsRunning = true;
 
-        Stop();
-        return false;
+        CheckRunning();
     }
-    public bool CheckRunning()
-    {
-        
-        if(Process == null || Process.HasExited || Client == null || Client.IsConnected == false)
-        {
-            return false;
-        }
 
-        try
-        {
-            lock(Client)
-            {
-                Client.Request(new byte[100], 1000);
-            }
-        }
-        catch
-        {
-            return false;
-        }
-
-        return true;
-    }
     public void Stop()
     {
+        if(!IsRunning) { return; }
         if (Client is { IsConnected: true })
         {
             try
@@ -132,6 +111,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
+        IsRunning = false;
     }
 
     public void Ping()
@@ -169,5 +149,44 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             }
             
         }
+    }
+
+    private void CheckRunning()
+    {
+        Task.Run(() =>
+        {
+            while (IsRunning)
+            {
+                if(Process == null || Process.HasExited || Client == null || Client.IsConnected == false)
+                {
+                    if (AutoStart)
+                    {
+                        Stop();
+                        Start(Port);
+                        if (!IsRunning)
+                        {
+                            //попытка перезапуска безуспешна
+                        }
+                    }
+
+                    IsRunning = false;
+                    return;
+                }
+
+                try
+                {
+                    lock(Client)
+                    {
+                        Client.Request(new byte[100], 1000);
+                    }
+                }
+                catch
+                {
+                    //not responding
+                }
+
+                Thread.Sleep(100);
+            }
+        });
     }
 }
