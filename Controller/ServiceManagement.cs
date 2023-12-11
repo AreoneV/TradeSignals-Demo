@@ -29,6 +29,8 @@ public class ServiceManagement
 
         const int maxLen = 30;
 
+        LogInfo("Common starting...");
+
         Console.Write("Status: ");
 
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -49,7 +51,7 @@ public class ServiceManagement
         }
 
         IsStarted = true;
-
+        LogInfo("Controller is running");
         CheckRunning();
 
         Console.Clear();
@@ -61,12 +63,14 @@ public class ServiceManagement
         {
             return;
         }
+        LogInfo("Common stopping...");
         IsStarted = false;
 
         foreach(var service in services)
         {
             service.Value.Stop();
         }
+        LogInfo("Controller has been stopped");
         Console.Clear();
         WriteInfo();
     }
@@ -127,7 +131,7 @@ public class ServiceManagement
                     }
                     catch
                     {
-                        // not responding
+                        LogWarning($"{o.Value.Name} is not responding!");
                     }
                 }
                 Thread.Sleep(1000);
@@ -205,7 +209,7 @@ public class ServiceManagement
 
         Console.Clear();
         WriteInfo();
-
+        LogWarning($"{service.Name} changed status: {status}");
         SendUpdate();
     }
 
@@ -222,7 +226,7 @@ public class ServiceManagement
     }
     public static void LogWarning(string msg)
     {
-        var m = $"{DateTime.Now:G} | Warning\t| {msg}";
+        var m = $"{DateTime.Now:G} | Warn\t| {msg}";
         Writer.WriteLine(m);
         Writer.Flush();
         if(m.Length > _maxLineLength)

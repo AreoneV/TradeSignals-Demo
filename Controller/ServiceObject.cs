@@ -30,13 +30,18 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public void Start()
     {
         if(IsRunning) { return; }
-
+        ServiceManagement.LogInfo($"{Name} is starting");
         if(!File.Exists(FullPath))
         {
+            ServiceManagement.LogError($"{Name} was not started. Executable file not found.");
             return;
         }
 
         var localByName = Process.GetProcessesByName($"{Name}");
+        if (localByName.Length > 0)
+        {
+            ServiceManagement.LogWarning($"Found {localByName.Length} the same processes. They will be killed.");
+        }
         foreach(Process p in localByName)
         {
             p.Kill();
@@ -45,6 +50,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         Port = GetFreePort();
 
         Process = Process.Start(FullPath, $"{Ip} {Port}")!;
+        ServiceManagement.LogInfo("Process has started");
 
         Client = new Client(Ip, Port);
 
@@ -56,16 +62,19 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             {
                 Client.Connect();
                 Client.ClientDisconnected += ClientOnClientDisconnected;
+                ServiceManagement.LogInfo("Connection is established");
                 break;
             }
             catch
             {
                 if (Process.HasExited)
                 {
+                    ServiceManagement.LogError("Starting failed. Process has exited.");
                     Stop();
                     return;
                 }
                 attempts--;
+                ServiceManagement.LogWarning($"Connection failed. There are still attempts left: {attempts}");
             }
             Thread.Sleep(1000);
         } while (attempts > 0);
@@ -73,17 +82,20 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
         if (!Client.IsConnected)
         {
+            ServiceManagement.LogError("Starting failed. Connection has closed.");
             Stop();
 
             return;
         }
 
+        ServiceManagement.LogInfo($"{Name} has started");
         IsRunning = true;
         EventRunningStatusChanged?.Invoke(this, true);
     }
     public void Stop()
     {
         if(!IsRunning) { return; }
+        ServiceManagement.LogInfo($"{Name} is stopping");
         if (Client is { IsConnected: true })
         {
             try
@@ -94,6 +106,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             {
                 Client.ClientDisconnected -= ClientOnClientDisconnected;
                 Client.Close();
+                ServiceManagement.LogInfo("Connection has closed");
             }
         }
 
@@ -105,14 +118,15 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                 if(!Process.WaitForExit(10000))
                 {
                     Process.Kill();
+                    ServiceManagement.LogWarning("Process was killed");
                 }
             }
             catch
             {
                 //ignored
             }
-            
         }
+        ServiceManagement.LogWarning($"Process code: {Process.ExitCode}");
         Client = null;
         Process = null;
         IsRunning = false;
@@ -161,7 +175,10 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         var tcpConnInfoArray = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
         for(var i = portRange.Start.Value; i < portRange.End.Value; i++)
         {
-            if(tcpConnInfoArray.All(con => con.LocalEndPoint.Port != i)) return i;
+            if (tcpConnInfoArray.Any(con => con.LocalEndPoint.Port == i)) continue;
+
+            ServiceManagement.LogInfo($"Got free port: {i}");
+            return i;
         }
 
         return -1;
@@ -170,14 +187,23 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     {
         if(AutoStart)
         {
+            ServiceManagement.LogWarning($"{Name} try to restart");
             Stop();
             Start();
-            if (IsRunning) return;
+            if (IsRunning)
+            {
+                ServiceManagement.LogWarning($"Restarting {Name} completed successfully");
+                ServiceManagement.LogSplit();
+                return;
+            }
 
-            //попытка перезапуска безуспешна
+            ServiceManagement.LogError($"Restarting {Name} failed");
             Stop();
+            ServiceManagement.LogSplit();
             return;
         }
+        ServiceManagement.LogError("Something went wrong! Service disconnected");
         Stop();
+        ServiceManagement.LogSplit();
     }
 }

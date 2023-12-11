@@ -54,13 +54,19 @@ internal class Program
             switch(cmd)
             {
                 case "exit":
+                    ServiceManagement.LogInfo("Enter 'exit' command");
                     Management.Stop();
+                    ServiceManagement.LogSplit();
                     return;
                 case "stop":
+                    ServiceManagement.LogInfo("Enter 'stop' command");
                     Management.Stop();
+                    ServiceManagement.LogSplit();
                     break;
                 case "start":
+                    ServiceManagement.LogInfo("Enter 'start' command");
                     Management.Start();
+                    ServiceManagement.LogSplit();
                     break;
                 case "help":
                 case "?":
@@ -129,10 +135,14 @@ internal class Program
                     switch (cmdLine[2])
                     {
                         case "start":
+                            ServiceManagement.LogInfo($"Enter '{cmdLine[0]} {cmdLine[1]} {cmdLine[2]}' command");
                             s.Start();
+                            ServiceManagement.LogSplit();
                             break;
                         case "stop":
+                            ServiceManagement.LogInfo($"Enter '{cmdLine[0]} {cmdLine[1]} {cmdLine[2]}' command");
                             s.Stop();
+                            ServiceManagement.LogSplit();
                             break;
                         case "ping":
                             s.Ping();
