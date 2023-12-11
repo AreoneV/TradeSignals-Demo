@@ -56,6 +56,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             try
             {
                 Client.Connect();
+                Client.ClientDisconnected += ClientOnClientDisconnected;
                 break;
             }
             catch
@@ -80,9 +81,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
 
         IsRunning = true;
         EventRunningStatusChanged?.Invoke(this, true);
-        CheckRunning();
     }
-
     public void Stop()
     {
         if(!IsRunning) { return; }
@@ -94,7 +93,8 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             }
             finally
             {
-                Client?.Close();
+                Client.ClientDisconnected -= ClientOnClientDisconnected;
+                Client.Close();
             }
         }
 
@@ -158,54 +158,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         }
     }
 
-    private void CheckRunning()
-    {
-        Task.Run(() =>
-        {
-            int countNotResponding = 0;
-            while (IsRunning)
-            {
-                if(Process == null || Process.HasExited || Client == null || Client.IsConnected == false)
-                {
-                    if (AutoStart)
-                    {
-                        Stop();
-                        Start();
-                        if (!IsRunning)
-                        {
-                            //попытка перезапуска безуспешна
-                            Stop();
-                            return;
-                        }
-                        continue;
-                    }
-                    Stop();
-                    return;
-                }
-
-                try
-                {
-                    lock(Client)
-                    {
-                        Client.Request(new byte[100], 1000);
-                        countNotResponding = 0;
-                    }
-                }
-                catch
-                {
-                    if (countNotResponding == 10)
-                    {
-                        Stop();
-                        return;
-                    }
-
-                    countNotResponding++;
-                }
-
-                Thread.Sleep(100);
-            }
-        });
-    }
     private int GetFreePort()
     {
         var tcpConnInfoArray = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
@@ -215,5 +167,19 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         }
 
         return -1;
+    }
+    private void ClientOnClientDisconnected(Client client)
+    {
+        if(AutoStart)
+        {
+            Stop();
+            Start();
+            if (IsRunning) return;
+
+            //попытка перезапуска безуспешна
+            Stop();
+            return;
+        }
+        Stop();
     }
 }
