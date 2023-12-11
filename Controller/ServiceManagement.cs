@@ -10,9 +10,8 @@ public class ServiceManagement
 
     private readonly Dictionary<ServiceNames, ServiceObject> services;
 
-    private readonly StreamWriter writer = new(LogFile, true);
-    private readonly List<string> logs = new();
-    private int maxLineLength = 1;
+    private static readonly StreamWriter Writer = new(LogFile, true);
+    private static int _maxLineLength = 1;
 
 
     public ServiceManagement()
@@ -211,45 +210,46 @@ public class ServiceManagement
     }
 
 
-    private void LogInfo(string msg)
+    public static void LogInfo(string msg)
     {
         var m = $"{DateTime.Now:G} | Info\t| {msg}";
-        writer.WriteLine(m);
-        writer.Flush();
-        if(m.Length > maxLineLength)
+        Writer.WriteLine(m);
+        Writer.Flush();
+        if(m.Length > _maxLineLength)
         {
-            maxLineLength = m.Length;
+            _maxLineLength = m.Length;
         }
-        logs.Add(msg);
     }
-    private void LogWarning(string msg)
+    public static void LogWarning(string msg)
     {
         var m = $"{DateTime.Now:G} | Warning\t| {msg}";
-        writer.WriteLine(m);
-        writer.Flush();
-        if(m.Length > maxLineLength)
+        Writer.WriteLine(m);
+        Writer.Flush();
+        if(m.Length > _maxLineLength)
         {
-            maxLineLength = m.Length;
+            _maxLineLength = m.Length;
         }
-        logs.Add(msg);
     }
-    private void LogError(string msg)
+    public static void LogError(string msg)
     {
         var m = $"{DateTime.Now:G} | Error\t| {msg}";
-        writer.WriteLine(m);
-        writer.Flush();
-        if(m.Length > maxLineLength)
+        Writer.WriteLine(m);
+        Writer.Flush();
+        if(m.Length > _maxLineLength)
         {
-            maxLineLength = m.Length;
+            _maxLineLength = m.Length;
         }
-        logs.Add(msg);
     }
-    private void LogSplit()
+    public static void LogSplit()
     {
-        writer.WriteLine(new string('_', maxLineLength));
-        writer.WriteLine();
-        writer.Flush();
+        Writer.WriteLine(new string('_', _maxLineLength));
+        Writer.WriteLine();
+        Writer.Flush();
     }
-
+    public static void LogClose()
+    {
+        Writer.Flush();
+        Writer.Close();
+    }
 
 }

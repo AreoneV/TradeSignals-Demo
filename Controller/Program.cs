@@ -28,6 +28,8 @@ internal class Program
         Console.WriteLine("If you need help enter '?' or 'help'");
         Console.Write("Enter command:");
         WhileCommand();
+
+        ServiceManagement.LogClose();
     }
 
 
