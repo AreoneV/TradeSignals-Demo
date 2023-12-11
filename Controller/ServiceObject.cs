@@ -22,13 +22,13 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public bool IsRunning { get; set; }
 
 
-    public bool Start(int port)
+    public void Start(int port)
     {
-        if(IsRunning) { return true; }
+        if(IsRunning) { return; }
 
         if(!File.Exists(FullPath))
         {
-            return false;
+            return;
         }
 
         var localByName = Process.GetProcessesByName($"{Name}");
@@ -57,7 +57,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                 if (Process.HasExited)
                 {
                     Stop();
-                    return false;
+                    return;
                 }
                 attempts--;
             }
@@ -65,8 +65,14 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         } while (attempts > 0);
 
 
-        if (Client.IsConnected) return true;
+        if (!Client.IsConnected)
+        {
+            Stop();
 
+            return;
+        }
+
+        IsRunning = true;
 
         Stop();
         return false;
