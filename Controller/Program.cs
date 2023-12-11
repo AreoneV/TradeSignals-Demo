@@ -26,7 +26,7 @@ internal class Program
         Management.WriteInfo();
 
         Console.WriteLine("If you need help enter '?' or 'help'");
-        
+        Console.Write("Enter command:");
         WhileCommand();
     }
 
@@ -36,7 +36,6 @@ internal class Program
     {
         while (true)
         {
-            Console.Write("Enter command:");
             var cmdLine = Console.ReadLine()?.Split(' ');
             if (cmdLine == null)
             {
@@ -138,7 +137,6 @@ internal class Program
                     {
                         case "start":
                             s.Start();
-                            Management.Update();
                             break;
                         case "stop":
                             s.Stop();
