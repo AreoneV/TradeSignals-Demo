@@ -28,7 +28,6 @@ public class ServiceManagement
     {
         if(IsStarted) return;
 
-        Console.Clear();
         const int maxLen = 30;
 
         Console.Write("Status: ");
@@ -52,32 +51,34 @@ public class ServiceManagement
 
         IsStarted = true;
 
+        CheckRunning();
 
-        Update();
+        Console.Clear();
+        WriteInfo();
     }
     public void Stop()
     {
-        if (!IsStarted)
+        if(!IsStarted)
         {
             return;
         }
         IsStarted = false;
 
-        foreach (var service in services)
+        foreach(var service in services)
         {
             service.Value.Stop();
         }
-
-        Update();
+        Console.Clear();
+        WriteInfo();
     }
 
     public void SendUpdate()
     {
-        if (!IsStarted) { return;}
+        if(!IsStarted) { return; }
 
         using var ms = new MemoryStream();
         var w = new BinaryWriter(ms);
-        foreach ((ServiceNames key, ServiceObject value) in services)
+        foreach((ServiceNames key, ServiceObject value) in services)
         {
             w.Write((int)key);
             w.Write(value.Ip);
@@ -89,10 +90,10 @@ public class ServiceManagement
 
         foreach((ServiceNames _, ServiceObject value) in services)
         {
-            if (!value.IsRunning) continue;
+            if(!value.IsRunning) continue;
             try
             {
-                lock (value.Client)
+                lock(value.Client)
                 {
                     value.Client.Request(data, 1000);
                 }
@@ -110,13 +111,30 @@ public class ServiceManagement
         WriteInfo();
     }
 
-    public void Update()
+    private void CheckRunning()
     {
-        var pos = Console.GetCursorPosition();
-        Console.SetCursorPosition(0, 0);
+        Task.Run(() =>
+        {
+            while(IsStarted)
+            {
+                foreach(var o in services.Where(o => o.Value.IsRunning))
+                {
+                    try
+                    {
+                        lock(o.Value.Client)
+                        {
+                            o.Value.Client.Request(new byte[100], 1000);
+                        }
+                    }
+                    catch
+                    {
+                        // not responding
+                    }
+                }
+                Thread.Sleep(1000);
+            }
 
-        WriteInfo();
-        Console.SetCursorPosition(pos.Left, pos.Top);
+        });
     }
     public void WriteInfo()
     {
@@ -132,7 +150,7 @@ public class ServiceManagement
 
         var indent = new string(' ', 4);
 
-        foreach (var service in services)
+        foreach(var service in services)
         {
             Console.Write($"{indent}{service.Value.Name}{new string('.', maxLen - service.Value.Name.ToString().Length)}");
             var stat = service.Value.IsRunning ? "Running" : "Stopped";
@@ -159,17 +177,17 @@ public class ServiceManagement
 
         using StreamReader r = new StreamReader(SettingFile);
 
-        while (!r.EndOfStream)
+        while(!r.EndOfStream)
         {
             var line = r.ReadLine()?.Trim();
-            if (line == null) continue;
+            if(line == null) continue;
             if(line.StartsWith("#")) continue;
 
             var args = line.Split(' ');
 
             if(args.Length != 4) continue;
 
-            if (!Enum.TryParse(typeof(ServiceNames), args[0], out object result)) continue;
+            if(!Enum.TryParse(typeof(ServiceNames), args[0], out object result)) continue;
 
             var name = (ServiceNames)result;
             var s = Services[name];
@@ -186,7 +204,9 @@ public class ServiceManagement
     {
         if(!IsStarted) return;
 
-        Update();
+        Console.Clear();
+        WriteInfo();
+
         SendUpdate();
     }
 
@@ -231,5 +251,5 @@ public class ServiceManagement
         writer.Flush();
     }
 
-    
+
 }
