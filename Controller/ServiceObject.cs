@@ -177,6 +177,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                             Stop();
                             return;
                         }
+                        continue;
                     }
                     Stop();
                     return;
