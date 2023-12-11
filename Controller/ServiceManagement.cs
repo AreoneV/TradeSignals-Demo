@@ -19,6 +19,8 @@ public class ServiceManagement
     //максимальная длинна лога для красивой отрисовки черты
     private static int _maxLineLength = 1;
 
+    //экземпляр управления
+    private static ServiceManagement _instance;
 
     private ServiceManagement()
     {
@@ -35,6 +37,15 @@ public class ServiceManagement
     /// Запущено ли управление
     /// </summary>
     public bool IsStarted { get; private set; }
+
+    /// <summary>
+    /// Возвращает экземпляр управления сервисами
+    /// </summary>
+    /// <returns></returns>
+    public static ServiceManagement GetInstance()
+    {
+        return _instance ??= new ServiceManagement();
+    }
 
 
 

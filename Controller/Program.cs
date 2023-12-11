@@ -4,7 +4,7 @@ namespace Controller;
 
 internal class Program
 {
-    private static readonly ServiceManagement Management = new();
+    private static readonly ServiceManagement Management = ServiceManagement.GetInstance();
 
 
     private static void Main()
