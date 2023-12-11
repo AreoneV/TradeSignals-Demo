@@ -137,18 +137,8 @@ internal class Program
                     switch (cmdLine[2])
                     {
                         case "start":
-                            try
-                            {
-                                //s.CommonStart();
-                            }
-                            catch(Exception ex)
-                            {
-                                Console.WriteLine($"Error starting: {ex.Message}");
-                            }
-                            finally
-                            {
-                                Management.Update();
-                            }
+                            s.Start();
+                            Management.Update();
                             break;
                         case "stop":
                             s.Stop();

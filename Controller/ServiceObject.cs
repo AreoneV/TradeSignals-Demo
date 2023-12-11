@@ -170,7 +170,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                     if (AutoStart)
                     {
                         Stop();
-                        Start(Port);
+                        Start();
                         if (!IsRunning)
                         {
                             //попытка перезапуска безуспешна
