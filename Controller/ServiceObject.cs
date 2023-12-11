@@ -15,7 +15,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public bool AutoStart { get; set; } = true;
     public int Port { get; private set; }
 
-    public int ExitCode { get; private set; }
 
     public Process Process { get; set; }
     public Client Client { get; set; }
@@ -114,7 +113,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             }
             
         }
-        ExitCode = Process?.ExitCode ?? ExitCode;
         Client = null;
         Process = null;
         IsRunning = false;
