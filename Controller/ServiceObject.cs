@@ -162,7 +162,6 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
         }
 
         //проверяем работает ли процесс и не null ли он
-        // ReSharper disable once InvertIf
         if(Process is { HasExited: false})
         {
             try
