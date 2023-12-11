@@ -10,8 +10,6 @@ public class ServiceManagement
     private const string SettingFile = "services.txt";
     private const string LogFile = "logs.txt";
 
-    private readonly Range portRange = new(41222, 41300);
-    private readonly IPGlobalProperties ipGlobalProperties;
     private readonly Dictionary<ServiceNames, ServiceObject> services;
 
     private readonly StreamWriter writer = new(LogFile, true);
@@ -23,7 +21,6 @@ public class ServiceManagement
     {
         services = new Dictionary<ServiceNames, ServiceObject>();
         Services = services.AsReadOnly();
-        ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
     }
 
     public ReadOnlyDictionary<ServiceNames, ServiceObject> Services { get; }
@@ -253,14 +250,5 @@ public class ServiceManagement
         writer.Flush();
     }
 
-    private int GetFreePort()
-    {
-        var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
-        for (var i = portRange.Start.Value; i < portRange.End.Value; i++)
-        {
-            if (tcpConnInfoArray.All(con => con.LocalEndPoint.Port != i)) return i;
-        }
-
-        return -1;
-    }
+    
 }

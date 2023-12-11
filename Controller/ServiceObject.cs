@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.NetworkInformation;
 using Protocol;
 using Services;
 
@@ -6,7 +7,8 @@ namespace Controller;
 
 public class ServiceObject(ServiceNames name, string ip, string fullPath)
 {
-    
+    private readonly Range portRange = new(41222, 41300);
+
     public ServiceNames Name { get; } = name;
     public string FullPath { get; set; } = fullPath;
     public string Ip { get; set; } = ip;
@@ -26,7 +28,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
     public event RunningDelegate EventRunningStatusChanged;
 
 
-    public void Start(int port)
+    public void Start()
     {
         if(IsRunning) { return; }
 
@@ -41,7 +43,7 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
             p.Kill();
         }
 
-        Port = port;
+        Port = GetFreePort();
 
         Process = Process.Start(FullPath, $"{Ip} {Port}")!;
 
@@ -202,5 +204,15 @@ public class ServiceObject(ServiceNames name, string ip, string fullPath)
                 Thread.Sleep(100);
             }
         });
+    }
+    private int GetFreePort()
+    {
+        var tcpConnInfoArray = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
+        for(var i = portRange.Start.Value; i < portRange.End.Value; i++)
+        {
+            if(tcpConnInfoArray.All(con => con.LocalEndPoint.Port != i)) return i;
+        }
+
+        return -1;
     }
 }
