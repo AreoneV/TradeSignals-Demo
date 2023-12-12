@@ -123,7 +123,10 @@ public class MarketDataFramework(string ip, int port)
 
         return bars;
     }
-
+    /// <summary>
+    /// Получить все имена символов
+    /// </summary>
+    /// <returns>Массив имен символов</returns>
     public string[] GetSymbolNames()
     {
         if(!client.IsConnected)
