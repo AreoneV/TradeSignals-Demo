@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MarketInfo;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,8 +42,6 @@ public class MarketDataFramework(string ip, int port)
         return (first, last);
     }
 
-
-
     public Bar GetLastBar(TimeFrame timeFrame)
     {
         if(!client.IsConnected)
@@ -59,7 +58,7 @@ public class MarketDataFramework(string ip, int port)
         var answer = client.Request(memoryStream.ToArray());
         writer.Close();
         memoryStream.Close();
-    
+
         using MemoryStream answerStream = new(answer);
         var reader = new BinaryReader(answerStream);
 
@@ -70,5 +69,39 @@ public class MarketDataFramework(string ip, int port)
 
         return b;
 
+    }
+
+    public Bar[] GetBars(TimeFrame timeFrame, int count)
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.SpecialCommand);
+        writer.Write((int)MarketDataCommand.GetLasBar);
+        writer.Write((int)timeFrame);
+        writer.Write(count);
+
+        var answer = client.Request(memoryStream.ToArray());
+        writer.Close();
+        memoryStream.Close();
+
+        using MemoryStream answerStream = new(answer);
+        var reader = new BinaryReader(answerStream);
+
+        var len = reader.ReadInt32();
+        var bars = new Bar[len];
+        for (int i = 0; i < len; i++)
+        {
+            bars[i] = Bar.Create(reader);
+        }
+
+        reader.Close();
+        answerStream.Close();
+
+        return bars;
     }
 }
