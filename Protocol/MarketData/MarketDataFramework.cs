@@ -137,7 +137,7 @@ public class MarketDataFramework(string ip, int port)
         using MemoryStream memoryStream = new();
         BinaryWriter writer = new(memoryStream);
         writer.Write((int)CommonCommand.SpecialCommand);
-        writer.Write((int)MarketDataCommand.GetLasBar);
+        writer.Write((int)MarketDataCommand.GetSymbolNames);
 
         var answer = client.Request(memoryStream.ToArray());
         writer.Close();
@@ -157,5 +157,34 @@ public class MarketDataFramework(string ip, int port)
         answerStream.Close();
 
         return symbols;
+    }
+    /// <summary>
+    /// Получить все логи с сервиса
+    /// </summary>
+    /// <returns>Массив логов</returns>
+    public string[] GetLogs()
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.Logs);
+
+        var answer = client.Request(memoryStream.ToArray());
+        writer.Close();
+        memoryStream.Close();
+
+        using MemoryStream answerStream = new(answer);
+        var reader = new BinaryReader(answerStream);
+
+        var logs = reader.ReadString().Split('\n');
+
+        reader.Close();
+        memoryStream.Close();
+
+        return logs;
     }
 }
