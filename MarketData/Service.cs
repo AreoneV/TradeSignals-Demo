@@ -133,6 +133,8 @@ internal class Service(string myIp, int myPort)
                         var bar = list[index];
                         index++;
 
+                        future[symbol] = (list, index);
+
                         var sym = symbols[symbol];
                         foreach (var tf in Enum.GetValues<TimeFrame>())
                         {
