@@ -1,18 +1,25 @@
 ﻿using MarketInfo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Protocol.MarketData;
+/// <summary>
+/// Библиотека для упрощенного использования сервиса MarketData
+/// </summary>
+/// <param name="ip">IP адрес сервиса</param>
+/// <param name="port">Порт сервиса</param>
 public class MarketDataFramework(string ip, int port)
 {
+    /// <summary>
+    /// Подключение к сервису
+    /// </summary>
     private readonly Client client = new(ip, port);
 
 
 
-
+    /// <summary>
+    /// Получить крайние даты(самую первую и самую последнюю)
+    /// </summary>
+    /// <param name="timeFrame">Временная рамка для получения</param>
+    /// <returns>Первую и последнюю извесную дату</returns>
     public (DateTime first, DateTime last) GetExtremeDate(TimeFrame timeFrame)
     {
         if(!client.IsConnected)
@@ -41,7 +48,11 @@ public class MarketDataFramework(string ip, int port)
 
         return (first, last);
     }
-
+    /// <summary>
+    /// Получить самый последний бар
+    /// </summary>
+    /// <param name="timeFrame">Временная рамка для получения последнего бара</param>
+    /// <returns>Последний бар</returns>
     public Bar GetLastBar(TimeFrame timeFrame)
     {
         if(!client.IsConnected)
@@ -70,7 +81,12 @@ public class MarketDataFramework(string ip, int port)
         return b;
 
     }
-
+    /// <summary>
+    /// Получить историю баров
+    /// </summary>
+    /// <param name="timeFrame">Временная рамка</param>
+    /// <param name="count">Количество баров</param>
+    /// <returns>Массив последних баров</returns>
     public Bar[] GetBars(TimeFrame timeFrame, int count)
     {
         if(!client.IsConnected)
