@@ -10,7 +10,7 @@ public class Client
     private Socket client;
 
     //Ожидание ответа
-    private readonly EventWaitHandle waiting = new EventWaitHandle(false, EventResetMode.AutoReset);
+    private readonly EventWaitHandle waiting = new(false, EventResetMode.AutoReset);
     private byte[] waitData;
 
     //Для того что бы ошибка не вылетала при ручном закрытии сокета
@@ -118,7 +118,7 @@ public class Client
     /// <exception cref="TimeoutException"></exception>
     public byte[] Request(byte[] message, int timeOut = 15000)
     {
-        if(message == null) throw new ArgumentNullException(nameof(message));
+        ArgumentNullException.ThrowIfNull(message);
 
         waitData = null;
         //отправляем сообщение

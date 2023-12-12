@@ -8,7 +8,7 @@ public class Server
 {
     private Socket serverSock;
 
-    private readonly Dictionary<IPEndPoint, Client> connections = new Dictionary<IPEndPoint, Client>();
+    private readonly Dictionary<IPEndPoint, Client> connections = [];
 
     public Server(string ip, int port, int backlog)
     {
