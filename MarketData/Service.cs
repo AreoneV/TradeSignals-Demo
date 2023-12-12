@@ -167,7 +167,7 @@ public class Service(string myIp, int myPort)
 
     private void LogWarning(string msg)
     {
-        var m = $"{DateTime.Now:G} | Warning\t| {msg}";
+        var m = $"{DateTime.Now:G} | Warn\t| {msg}";
         writer.WriteLine(m);
         writer.Flush();
         if(m.Length > maxLineLength)
