@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "TestServer\TestServer.csproj", "{691BD2F9-92AF-4062-87AC-81288371E656}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketInfo", "MarketInfo\MarketInfo.csproj", "{0FC33071-BD59-40B8-A053-26E01090BB36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MarketInfo", "MarketInfo\MarketInfo.csproj", "{0FC33071-BD59-40B8-A053-26E01090BB36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

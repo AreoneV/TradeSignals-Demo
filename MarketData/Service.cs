@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MarketInfo;
+﻿using MarketInfo;
 using Protocol;
 
 // ReSharper disable StringLiteralTypo
@@ -11,9 +10,9 @@ internal class Service(string myIp, int myPort)
 
     private readonly StreamWriter writer = new(LogFileName, true);
 
-    private readonly Dictionary<string, Symbol> symbols = new();
+    private readonly Dictionary<string, Symbol> symbols = [];
 
-    private readonly Dictionary<string, List<Bar>> future = new();
+    private readonly Dictionary<string, List<Bar>> future = [];
 
     private int maxLineLength = 1;
 
@@ -79,7 +78,7 @@ internal class Service(string myIp, int myPort)
         var fs = File.OpenRead(historyFile);
         var br = new BinaryReader(fs);
 
-        Symbol symbol = new Symbol(name, digits);
+        Symbol symbol = new(name, digits);
 
         var hst = symbol.Histories[TimeFrame.M1];
 
