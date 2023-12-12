@@ -20,7 +20,7 @@ public class MarketDataFramework(string ip, int port)
     /// </summary>
     /// <param name="timeFrame">Временная рамка для получения</param>
     /// <returns>Первую и последнюю извесную дату</returns>
-    public (DateTime first, DateTime last) GetExtremeDate(TimeFrame timeFrame)
+    public (DateTime first, DateTime last) GetExtremeDate(string symbol, TimeFrame timeFrame)
     {
         if(!client.IsConnected)
         {
@@ -31,6 +31,7 @@ public class MarketDataFramework(string ip, int port)
         BinaryWriter writer = new(memoryStream);
         writer.Write((int)CommonCommand.SpecialCommand);
         writer.Write((int)MarketDataCommand.GetExtremeDate);
+        writer.Write(symbol);
         writer.Write((int)timeFrame);
 
         var answer = client.Request(memoryStream.ToArray());
@@ -53,7 +54,7 @@ public class MarketDataFramework(string ip, int port)
     /// </summary>
     /// <param name="timeFrame">Временная рамка для получения последнего бара</param>
     /// <returns>Последний бар</returns>
-    public Bar GetLastBar(TimeFrame timeFrame)
+    public Bar GetLastBar(string symbol, TimeFrame timeFrame)
     {
         if(!client.IsConnected)
         {
@@ -64,6 +65,7 @@ public class MarketDataFramework(string ip, int port)
         BinaryWriter writer = new(memoryStream);
         writer.Write((int)CommonCommand.SpecialCommand);
         writer.Write((int)MarketDataCommand.GetLasBar);
+        writer.Write(symbol);
         writer.Write((int)timeFrame);
 
         var answer = client.Request(memoryStream.ToArray());
@@ -87,7 +89,7 @@ public class MarketDataFramework(string ip, int port)
     /// <param name="timeFrame">Временная рамка</param>
     /// <param name="count">Количество баров</param>
     /// <returns>Массив последних баров</returns>
-    public Bar[] GetBars(TimeFrame timeFrame, int count)
+    public Bar[] GetBars(string symbol, TimeFrame timeFrame, int count)
     {
         if(!client.IsConnected)
         {
@@ -98,6 +100,7 @@ public class MarketDataFramework(string ip, int port)
         BinaryWriter writer = new(memoryStream);
         writer.Write((int)CommonCommand.SpecialCommand);
         writer.Write((int)MarketDataCommand.GetLasBar);
+        writer.Write(symbol);
         writer.Write((int)timeFrame);
         writer.Write(count);
 
