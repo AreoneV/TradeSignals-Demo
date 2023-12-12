@@ -100,7 +100,7 @@ public class MarketDataFramework(string ip, int port)
         using MemoryStream memoryStream = new();
         BinaryWriter writer = new(memoryStream);
         writer.Write((int)CommonCommand.SpecialCommand);
-        writer.Write((int)MarketDataCommand.GetLasBar);
+        writer.Write((int)MarketDataCommand.GetBars);
         writer.Write(symbol);
         writer.Write((int)timeFrame);
         writer.Write(count);
