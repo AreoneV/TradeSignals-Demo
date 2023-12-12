@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MarketData;
+namespace Services;
 public enum ExitCode
 {
     Ok = 0,

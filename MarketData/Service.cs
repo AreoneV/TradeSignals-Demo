@@ -1,6 +1,7 @@
 ﻿using MarketInfo;
 using Protocol;
 using Protocol.MarketData;
+using Services;
 
 namespace MarketData;
 

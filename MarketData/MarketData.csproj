@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MarketInfo\MarketInfo.csproj" />
     <ProjectReference Include="..\Protocol\Protocol.csproj" />
+    <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
