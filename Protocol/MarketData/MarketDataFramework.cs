@@ -214,4 +214,24 @@ public class MarketDataFramework(string ip, int port)
 
         return sw.Elapsed.TotalMilliseconds;
     }
+    /// <summary>
+    /// Посылает команду на выключение сервиса
+    /// </summary>
+    public void Shutdown()
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.Shutdown);
+
+        var answer = client.Request(memoryStream.ToArray());
+
+        writer.Close();
+        memoryStream.Close();
+        client.Close();
+    }
 }
