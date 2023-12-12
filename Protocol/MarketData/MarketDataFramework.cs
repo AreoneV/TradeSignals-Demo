@@ -120,4 +120,36 @@ public class MarketDataFramework(string ip, int port)
 
         return bars;
     }
+
+    public string[] GetSymbolNames()
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.SpecialCommand);
+        writer.Write((int)MarketDataCommand.GetLasBar);
+
+        var answer = client.Request(memoryStream.ToArray());
+        writer.Close();
+        memoryStream.Close();
+
+        using MemoryStream answerStream = new(answer);
+        var reader = new BinaryReader(answerStream);
+
+        var len = reader.ReadInt32();
+        var symbols = new string[len];
+        for(int i = 0; i < len; i++)
+        {
+            symbols[i] = reader.ReadString();
+        }
+
+        reader.Close();
+        answerStream.Close();
+
+        return symbols;
+    }
 }

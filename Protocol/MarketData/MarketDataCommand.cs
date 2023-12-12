@@ -3,5 +3,6 @@ public enum MarketDataCommand
 {
     GetBars,
     GetExtremeDate,
-    GetLasBar
+    GetLasBar,
+    GetSymbolNames,
 }
