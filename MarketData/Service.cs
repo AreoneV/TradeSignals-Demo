@@ -8,16 +8,18 @@ namespace MarketData;
 internal class Service(string myIp, int myPort)
 {
     private const string LogFileName = "logs.txt";
-
     private readonly StreamWriter writer = new(LogFileName, true);
 
     private readonly Dictionary<string, Symbol> symbols = [];
 
-    private readonly Dictionary<string, List<Bar>> future = [];
+    private readonly Dictionary<string, (List<Bar> list, int index)> future = [];
 
     private int maxLineLength = 1;
 
     private readonly Server server = new(myIp, myPort, 10);
+
+    private bool isRunning = true;
+    private const int sleepImitation = 500; 
 
     public ExitCode Run()
     {
@@ -54,6 +56,8 @@ internal class Service(string myIp, int myPort)
         LogWarning("Server was stopped!");
         LogSplit();
         writer.Close();
+
+        isRunning = false;
 
         return ExitCode.Ok;
     }
@@ -104,13 +108,48 @@ internal class Service(string myIp, int myPort)
             list.Add(Bar.Create(br));
         }
 
-        future.Add(name, list);
+        future.Add(name, (list, 0));
 
         br.Close();
         fs.Dispose();
     }
 
+    private void ImitationWorking()
+    {
+        isRunning = true;
+        Task.Run(() =>
+        {
 
+            while(isRunning)
+            {
+                try
+                {
+                    foreach(var item in future)
+                    {
+                        if(item.Value.index >= item.Value.list.Count) return;
+                        var symbol = item.Key;
+
+                        var (list, index) = future[symbol];
+                        var bar = list[index];
+                        index++;
+
+                        var sym = symbols[symbol];
+                        foreach (var tf in Enum.GetValues<TimeFrame>())
+                        {
+                            var h = sym.Histories[tf];
+                            h.Add(bar);
+                        }
+                    }
+                    Thread.Sleep(sleepImitation);
+                }
+                catch(Exception ex)
+                {
+                    LogError($"Error imitation working: {ex.Message}");
+                    return;
+                }
+            }
+        });
+    }
 
     private void LogInfo(string msg)
     {
@@ -156,6 +195,7 @@ internal class Service(string myIp, int myPort)
     private void ServerOnServerStarted(Server srv)
     {
         LogInfo("Server is running...");
+        ImitationWorking();
     }
     private void ServerOnUserConnected(Server srv, Client client)
     {
