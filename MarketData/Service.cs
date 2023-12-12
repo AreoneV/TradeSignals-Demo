@@ -4,7 +4,7 @@ using Protocol.MarketData;
 
 namespace MarketData;
 
-public class Service(string myIp, int myPort)
+internal class Service(string myIp, int myPort)
 {
     private const string LogFileName = "logs.txt";
     private readonly StreamWriter writer = new(LogFileName, true);
