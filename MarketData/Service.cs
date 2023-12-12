@@ -1,5 +1,6 @@
 ﻿using MarketInfo;
 using Protocol;
+using Protocol.MarketData;
 
 // ReSharper disable StringLiteralTypo
 namespace MarketData;
@@ -168,6 +169,99 @@ internal class Service(string myIp, int myPort)
     }
     private void ClientOnReceivedRequest(Client client, byte[] message)
     {
+        using var ms = new MemoryStream(message);
+        var reader = new BinaryReader(ms);
 
+        using var answer = new MemoryStream();
+        var writer = new BinaryWriter(answer);
+
+        var common = (CommonCommand)reader.ReadInt32();
+        switch(common)
+        {
+            case CommonCommand.Shutdown:
+                Close("Received shutdown command!");
+                break;
+            case CommonCommand.SpecialCommand:
+                var specCommand = (MarketDataCommand)reader.ReadInt32();
+                ProcessingCommand(specCommand, reader, writer);
+                client.SendAnswer(answer.ToArray());
+                break;
+            case CommonCommand.Logs:
+                if(!File.Exists(LogFileName))
+                {
+                    writer.Write("There isn't logs");
+                    client.SendAnswer(answer.ToArray());
+                    return;
+                }
+                writer.Write(File.ReadAllText(LogFileName));
+                client.SendAnswer(answer.ToArray());
+                return;
+            default:
+                client.SendAnswer(message);
+                return;
+        }
+    }
+    private void ProcessingCommand(MarketDataCommand command, BinaryReader reader, BinaryWriter writer)
+    {
+        string symbol;
+        TimeFrame tf;
+        switch(command)
+        {
+            case MarketDataCommand.GetSymbolNames:
+                writer.Write(symbols.Count);
+                foreach(var symbolName in symbols.Keys)
+                {
+                    writer.Write(symbolName);
+                }
+                break;
+            case MarketDataCommand.GetLasBar:
+                symbol = reader.ReadString();
+                tf = (TimeFrame)reader.ReadInt32();
+                try
+                {
+                    symbols[symbol].Histories[tf].LastBar.Save(writer);
+                }
+                catch
+                {
+                    (new Bar()).Save(writer);
+                }
+                break;
+            case MarketDataCommand.GetExtremeDate:
+                symbol = reader.ReadString();
+                tf = (TimeFrame)reader.ReadInt32();
+                try
+                {
+                    writer.Write(symbols[symbol].Histories[tf].FirstBar.Date.Ticks);
+                    writer.Write(symbols[symbol].Histories[tf].LastBar.Date.Ticks);
+                }
+                catch
+                {
+                    writer.Write(new DateTime().Ticks);
+                    writer.Write(new DateTime().Ticks);
+                }
+                break;
+            case MarketDataCommand.GetBars:
+                symbol = reader.ReadString();
+                tf = (TimeFrame)reader.ReadInt32();
+                int count = reader.ReadInt32();
+                try
+                {
+                    var h = symbols[symbol].Histories[tf];
+                    var list = h.Bars.TakeLast(count);
+                    writer.Write(list.Count());
+                    foreach (var bar in list)
+                    {
+                        bar.Save(writer);
+                    }
+                }
+                catch
+                {
+                    (new Bar()).Save(writer);
+                }
+                break;
+            default:
+                writer.Write("Error command");
+                break;
+        }
     }
 }
