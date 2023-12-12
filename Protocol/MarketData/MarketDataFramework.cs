@@ -1,4 +1,5 @@
 ﻿using MarketInfo;
+using System.Diagnostics;
 
 namespace Protocol.MarketData;
 /// <summary>
@@ -186,5 +187,31 @@ public class MarketDataFramework(string ip, int port)
         memoryStream.Close();
 
         return logs;
+    }
+    /// <summary>
+    /// Проверяет скорость соединения(запрос - ответ) в миллисекундах
+    /// </summary>
+    /// <param name="packetLength">Длинна пакета в байтах</param>
+    /// <returns>Время в миллисекундах</returns>
+    public double Ping(int packetLength)
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        var sw = Stopwatch.StartNew();
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.Ping);
+        writer.Write(new byte[packetLength]);
+        
+        var answer = client.Request(memoryStream.ToArray());
+
+        sw.Stop();
+        writer.Close();
+        memoryStream.Close();
+
+        return sw.Elapsed.TotalMilliseconds;
     }
 }
