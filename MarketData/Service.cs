@@ -1,11 +1,12 @@
 ﻿using MarketInfo;
 using Protocol;
 using Protocol.MarketData;
+using System.Collections.Generic;
 
 // ReSharper disable StringLiteralTypo
 namespace MarketData;
 
-internal class Service(string myIp, int myPort)
+public class Service(string myIp, int myPort)
 {
     private const string LogFileName = "logs.txt";
     private readonly StreamWriter writer = new(LogFileName, true);
@@ -299,6 +300,7 @@ internal class Service(string myIp, int myPort)
                 {
                     var h = symbols[symbol].Histories[tf];
                     var list = h.Bars.TakeLast(count);
+
                     writer.Write(list.Count());
                     foreach (var bar in list)
                     {
@@ -307,6 +309,7 @@ internal class Service(string myIp, int myPort)
                 }
                 catch
                 {
+                    writer.Write(1);
                     (new Bar()).Save(writer);
                 }
                 break;
