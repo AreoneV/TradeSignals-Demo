@@ -12,5 +12,35 @@ public class MarketDataFramework(string ip, int port)
 
 
 
+    public (DateTime first, DateTime last) GetExtremeDate(TimeFrame timeFrame)
+    {
+        if(!client.IsConnected)
+        {
+            client.Connect();
+        }
+
+        using MemoryStream memoryStream = new();
+        BinaryWriter writer = new(memoryStream);
+        writer.Write((int)CommonCommand.SpecialCommand);
+        writer.Write((int)MarketDataCommand.GetExtremeDate);
+        writer.Write((int)timeFrame);
+
+        var answer = client.Request(memoryStream.ToArray());
+        writer.Close();
+        memoryStream.Close();
+
+        using MemoryStream answerStream = new(answer);
+        var reader = new BinaryReader(answerStream);
+
+        var first = new DateTime(reader.ReadInt64());
+        var last = new DateTime(reader.ReadInt64());
+
+        reader.Close();
+        answerStream.Close();
+
+        return (first, last);
+    }
+
+
     
 }
