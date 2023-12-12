@@ -18,14 +18,10 @@ internal class Service(string myIp, int myPort)
 
     private readonly Server server = new(myIp, myPort, 10);
 
-    public void Run()
+    public ExitCode Run()
     {
         LogInfo("Starting...");
-        //соединение с контроллером
-
-
-        //
-        LogInfo("Connection to controller is established!");
+        
         try
         {
             //загрузка данных, история и будущее
@@ -36,9 +32,8 @@ internal class Service(string myIp, int myPort)
         catch(Exception ex)
         {
             LogError($"Error loading history: {ex}.\n");
-            //отправить контроллеру
             LogSplit();
-            return;
+            return ExitCode.ErrorStarting;
         }
 
         server.UserConnected += ServerOnUserConnected;
@@ -51,17 +46,15 @@ internal class Service(string myIp, int myPort)
         catch (Exception e)
         {
             LogError($"Error running server: {e}.\n");
-            //отправить контроллеру
             LogSplit();
-            return;
+            return ExitCode.ErrorStarting;
         }
-
-        //отправляем на контроллер
-        //закрываем контроллер
 
         LogWarning("Server was stopped!");
         LogSplit();
         writer.Close();
+
+        return ExitCode.Ok;
     }
 
     
@@ -170,7 +163,8 @@ internal class Service(string myIp, int myPort)
     }
     private void ClientOnClientDisconnected(Client client)
     {
-
+        client.ReceivedRequest -= ClientOnReceivedRequest;
+        client.ClientDisconnected -= ClientOnClientDisconnected;
     }
     private void ClientOnReceivedRequest(Client client, byte[] message)
     {
