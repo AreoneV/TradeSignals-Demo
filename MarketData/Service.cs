@@ -174,31 +174,40 @@ internal class Service(string myIp, int myPort)
 
         using var answer = new MemoryStream();
         var writer = new BinaryWriter(answer);
-
-        var common = (CommonCommand)reader.ReadInt32();
-        switch(common)
+        try
         {
-            case CommonCommand.Shutdown:
-                Close("Received shutdown command!");
-                break;
-            case CommonCommand.SpecialCommand:
-                var specCommand = (MarketDataCommand)reader.ReadInt32();
-                ProcessingCommand(specCommand, reader, writer);
-                client.SendAnswer(answer.ToArray());
-                break;
-            case CommonCommand.Logs:
-                if(!File.Exists(LogFileName))
-                {
-                    writer.Write("There isn't logs");
+
+            var common = (CommonCommand)reader.ReadInt32();
+            switch(common)
+            {
+                case CommonCommand.Shutdown:
+                    Close("Received shutdown command!");
+                    break;
+                case CommonCommand.SpecialCommand:
+                    var specCommand = (MarketDataCommand)reader.ReadInt32();
+                    ProcessingCommand(specCommand, reader, writer);
+                    client.SendAnswer(answer.ToArray());
+                    break;
+                case CommonCommand.Logs:
+                    if(!File.Exists(LogFileName))
+                    {
+                        writer.Write("There isn't logs");
+                        client.SendAnswer(answer.ToArray());
+                        return;
+                    }
+                    writer.Write(File.ReadAllText(LogFileName));
                     client.SendAnswer(answer.ToArray());
                     return;
-                }
-                writer.Write(File.ReadAllText(LogFileName));
-                client.SendAnswer(answer.ToArray());
-                return;
-            default:
-                client.SendAnswer(message);
-                return;
+                default:
+                    client.SendAnswer(message);
+                    return;
+            }
+        }
+        catch(Exception ex)
+        {
+            LogError($"Error processing command: {ex.Message}");
+            writer.Write(ex.ToString());
+            client.SendAnswer(answer.ToArray());
         }
     }
     private void ProcessingCommand(MarketDataCommand command, BinaryReader reader, BinaryWriter writer)
