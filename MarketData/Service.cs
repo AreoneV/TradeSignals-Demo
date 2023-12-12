@@ -1,9 +1,7 @@
 ﻿using MarketInfo;
 using Protocol;
 using Protocol.MarketData;
-using System.Collections.Generic;
 
-// ReSharper disable StringLiteralTypo
 namespace MarketData;
 
 public class Service(string myIp, int myPort)
