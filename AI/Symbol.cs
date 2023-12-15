@@ -14,16 +14,28 @@ public class Symbol
     {
         Name = name;
         Load();
-        BuyNetworks = buyNetworks.AsReadOnly();
-        SellNetworks = sellNetworks.AsReadOnly();
     }
 
 
     public string Name { get; }
-    public ReadOnlyDictionary<TimeFrame, BasicNetwork> BuyNetworks { get; }
-    public ReadOnlyDictionary<TimeFrame, BasicNetwork> SellNetworks { get; }
 
 
+    public (float buy, float sell) Predict(TimeFrame timeFrame, float[] inputs)
+    {
+        if (inputs.Length != Service.InputsBars * 4) return (0, 0);
+
+        float buy = 0;
+        if (buyNetworks.TryGetValue(timeFrame, out BasicNetwork nnBuy))
+        {
+            buy = nnBuy.Predict(inputs)[0];
+        }
+        float sell = 0;
+        if(buyNetworks.TryGetValue(timeFrame, out BasicNetwork nnSell))
+        {
+            sell = nnSell.Predict(inputs)[0];
+        }
+        return (buy, sell);
+    }
 
     private void Load()
     {

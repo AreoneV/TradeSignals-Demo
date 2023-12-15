@@ -10,7 +10,7 @@ public class Service
     private int maxLineLength = 1;
 
 
-
+    private readonly Dictionary<string, Symbol> symbols = [];
 
     public const int InputsBars = 50;
 
