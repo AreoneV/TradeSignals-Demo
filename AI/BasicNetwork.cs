@@ -4,13 +4,13 @@ using AI.Layers;
 namespace AI;
 public class BasicNetwork(int inputs)
 {
-    internal readonly int inputs = inputs;
-    internal List<Layer> layers = [];
+    internal readonly int Inputs = inputs;
+    internal List<Layer> Layers = [];
 
     public void AddLayer(Layer layer, IInitialization initialization)
     {
-        layer.InitializeWeights(layers.Count == 0 ? inputs : layers.Last().Size, initialization);
-        layers.Add(layer);
+        layer.InitializeWeights(Layers.Count == 0 ? Inputs : Layers.Last().Size, initialization);
+        Layers.Add(layer);
     }
 
 
@@ -20,7 +20,7 @@ public class BasicNetwork(int inputs)
         var fs = new FileStream(file, FileMode.Create, FileAccess.Write);
         BinaryWriter w = new(fs);
 
-        foreach(var layer in layers)
+        foreach(var layer in Layers)
         {
             layer.SaveWeights(w);
         }
@@ -31,7 +31,7 @@ public class BasicNetwork(int inputs)
         var fs = new FileStream(file, FileMode.Open, FileAccess.Read);
         BinaryReader w = new(fs);
 
-        foreach(var layer in layers)
+        foreach(var layer in Layers)
         {
             layer.LoadWeights(w);
         }
@@ -39,14 +39,9 @@ public class BasicNetwork(int inputs)
     }
 
 
-    public float[] Predict(float[] inputs)
+    public float[] Predict(float[] inputData)
     {
-        float[] result = inputs;
-        for(int i = 0; i < layers.Count; i++)
-        {
-            result = layers[i].FeedForward(result);
-        }
-        return result;
+        return Layers.Aggregate(inputData, (current, t) => t.FeedForward(current));
     }
 
 
