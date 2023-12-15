@@ -12,7 +12,7 @@ public class Service
 
 
 
-
+    public const int InputsBars = 50;
 
 
 
