@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MarketInfo\MarketInfo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Weights\EURUSD-Buy-H1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
