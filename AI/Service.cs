@@ -227,11 +227,11 @@ public class Service(string myIp, int myPort)
                 //считываем символ и временную рамку
                 string symbol = reader.ReadString();
                 var tf = (TimeFrame)reader.ReadInt32();
-
+                //получаем длину входящих данных
                 int len = reader.ReadInt32();
-
+                //создаем массив данных
                 float[] data = new float[len];
-
+                //считываем данные в массив
                 for (int i = 0; i < len; i++)
                 {
                     data[i] = reader.ReadSingle();
@@ -239,12 +239,15 @@ public class Service(string myIp, int myPort)
 
                 try
                 {
+                    //предсказываем сигнал по рыночным данным 
                     var p = symbols[symbol].Predict(tf, data);
+                    //пишем предсказания
                     w.Write(p.buy);
                     w.Write(p.sell);
                 }
                 catch
                 {
+                    //возвращаем нули если чего то нет
                     w.Write(0f);
                     w.Write(0f);
                 }
