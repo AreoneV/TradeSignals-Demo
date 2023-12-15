@@ -1,4 +1,6 @@
-﻿using Protocol;
+﻿using MarketInfo;
+using Protocol;
+using Protocol.MarketData;
 using Services;
 
 namespace AI;
@@ -41,7 +43,8 @@ public class Service(string myIp, int myPort)
             return ExitCode.ErrorStarting;
         }
 
-        
+        server.UserConnected += ServerOnUserConnected;
+        server.ServerStarted += ServerOnServerStarted;
 
         try
         {
@@ -115,4 +118,94 @@ public class Service(string myIp, int myPort)
         writer.WriteLine();
         writer.Flush();
     }
+
+
+
+    /// <summary>
+    /// Когда сервер запустился
+    /// </summary>
+    /// <param name="srv"></param>
+    private void ServerOnServerStarted(Server srv)
+    {
+        LogInfo("Server is running...");
+    }
+    /// <summary>
+    /// Когда есть новое соединение
+    /// </summary>
+    /// <param name="srv"></param>
+    /// <param name="client"></param>
+    private void ServerOnUserConnected(Server srv, Client client)
+    {
+        client.ReceivedRequest += ClientOnReceivedRequest;
+        client.ClientDisconnected += ClientOnClientDisconnected;
+    }
+    /// <summary>
+    /// Когда соединение разорвано
+    /// </summary>
+    /// <param name="client"></param>
+    private void ClientOnClientDisconnected(Client client)
+    {
+        client.ReceivedRequest -= ClientOnReceivedRequest;
+        client.ClientDisconnected -= ClientOnClientDisconnected;
+    }
+
+    /// <summary>
+    /// Когда получен новый запрос
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="message"></param>
+    private void ClientOnReceivedRequest(Client client, byte[] message)
+    {
+        //данные для считывания
+        using var ms = new MemoryStream(message);
+        var reader = new BinaryReader(ms);
+        //данные для ответа
+        using var answer = new MemoryStream();
+        var w = new BinaryWriter(answer);
+        try
+        {
+            //получаем команду
+            var common = (CommonCommand)reader.ReadInt32();
+            switch(common)
+            {
+                //если команда выключить
+                case CommonCommand.Shutdown:
+                    //закрываем
+                    Close("Received shutdown command!");
+                    //отправляем пустой ответ
+                    client.SendAnswer([]);
+                    break;
+                //специальная команда
+                case CommonCommand.SpecialCommand:
+                    //берем ее и отправляем на обработку
+                    
+                    //отправляем ответ
+                    client.SendAnswer(answer.ToArray());
+                    break;
+                case CommonCommand.Logs:
+                    //проверяем есть ли файл
+                    if(!File.Exists(LogFileName))
+                    {
+                        w.Write("There isn't logs");
+                        client.SendAnswer(answer.ToArray());
+                        return;
+                    }
+                    //считываем и отправляем
+                    w.Write(File.ReadAllText(LogFileName));
+                    client.SendAnswer(answer.ToArray());
+                    return;
+                default:
+                    //в остальных случаях просто отправляем то что нам прислали
+                    client.SendAnswer(message);
+                    return;
+            }
+        }
+        catch(Exception ex)
+        {
+            LogError($"Error processing command: {ex.Message}");
+            w.Write(ex.ToString());
+            client.SendAnswer(answer.ToArray());
+        }
+    }
+    
 }
