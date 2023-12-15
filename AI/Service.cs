@@ -1,5 +1,6 @@
 ﻿using MarketInfo;
 using Protocol;
+using Protocol.AI;
 using Protocol.MarketData;
 using Services;
 
@@ -178,7 +179,8 @@ public class Service(string myIp, int myPort)
                 //специальная команда
                 case CommonCommand.SpecialCommand:
                     //берем ее и отправляем на обработку
-                    
+                    var specCommand = (AICommand)reader.ReadInt32();
+                    ProcessingCommand(specCommand, reader, w);
                     //отправляем ответ
                     client.SendAnswer(answer.ToArray());
                     break;
@@ -194,6 +196,9 @@ public class Service(string myIp, int myPort)
                     w.Write(File.ReadAllText(LogFileName));
                     client.SendAnswer(answer.ToArray());
                     return;
+                case CommonCommand.Ping:
+                case CommonCommand.Ok:
+                case CommonCommand.Error:
                 default:
                     //в остальных случаях просто отправляем то что нам прислали
                     client.SendAnswer(message);
@@ -207,5 +212,47 @@ public class Service(string myIp, int myPort)
             client.SendAnswer(answer.ToArray());
         }
     }
-    
+    /// <summary>
+    /// Обработка специальных запросов
+    /// </summary>
+    /// <param name="command">Команда</param>
+    /// <param name="reader">Считывание данных которые пришли вместе с командой</param>
+    /// <param name="w">Запись данных для отправки ответа</param>
+    private void ProcessingCommand(AICommand command, BinaryReader reader, BinaryWriter w)
+    {
+        switch(command)
+        {
+            //запрос на получение символов
+            case AICommand.Predict:
+                //считываем символ и временную рамку
+                string symbol = reader.ReadString();
+                var tf = (TimeFrame)reader.ReadInt32();
+
+                int len = reader.ReadInt32();
+
+                float[] data = new float[len];
+
+                for (int i = 0; i < len; i++)
+                {
+                    data[i] = reader.ReadSingle();
+                }
+
+                try
+                {
+                    var p = symbols[symbol].Predict(tf, data);
+                    w.Write(p.buy);
+                    w.Write(p.sell);
+                }
+                catch
+                {
+                    w.Write(0f);
+                    w.Write(0f);
+                }
+                break;
+            default:
+                w.Write(0f);
+                w.Write(0f);
+                break;
+        }
+    }
 }
