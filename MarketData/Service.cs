@@ -13,7 +13,7 @@ namespace MarketData;
 internal class Service(string myIp, int myPort)
 {
     //Путь к файлу логов
-    private const string LogFileName = "logs.txt";
+    private const string LogFileName = "logs_market_data.txt";
     //логгер
     private readonly StreamWriter writer = new(LogFileName, true);
     //история символов
