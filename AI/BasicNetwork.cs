@@ -2,7 +2,7 @@
 using AI.Layers;
 
 namespace AI;
-public class BasicNetwork(int inputs)
+internal class BasicNetwork(int inputs)
 {
     internal readonly int Inputs = inputs;
     internal List<Layer> Layers = [];

@@ -1,4 +1,5 @@
-﻿using MarketInfo;
+﻿using System.Text;
+using MarketInfo;
 using Protocol;
 using Protocol.AI;
 using Services;
@@ -6,12 +7,13 @@ using Services;
 
 namespace AI;
 
-public class Service(string myIp, int myPort)
+internal class Service(string myIp, int myPort)
 {
     //Путь к файлу логов
     private const string LogFileName = "logs_ai.txt";
-    //логгер
-    private readonly StreamWriter writer = new(LogFileName, true);
+    //логгер и его поток
+    private FileStream logStream;
+    private StreamWriter writer;
     //максимальная длинна лога для красивой отрисовки
     private int maxLineLength = 1;
 
@@ -28,6 +30,17 @@ public class Service(string myIp, int myPort)
     /// <returns>Возвращает код работы программы</returns>
     public ExitCode Run()
     {
+        try
+        {
+            logStream = new FileStream(LogFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            logStream.Position = logStream.Length;
+            writer = new StreamWriter(logStream, Encoding.UTF8);
+        }
+        catch
+        {
+            return ExitCode.ErrorStarting;
+        }
+
         LogInfo("Starting...");
 
         try
@@ -185,15 +198,19 @@ public class Service(string myIp, int myPort)
                     client.SendAnswer(answer.ToArray());
                     break;
                 case CommonCommand.Logs:
-                    //проверяем есть ли файл
-                    if(!File.Exists(LogFileName))
+                    
+                    //проверяем есть ли логи
+                    if(logStream.Length == 0)
                     {
                         w.Write("There isn't logs");
                         client.SendAnswer(answer.ToArray());
                         return;
                     }
                     //считываем и отправляем
-                    w.Write(File.ReadAllText(LogFileName));
+                    logStream.Position = 0;
+                    var buf = new byte[logStream.Length];
+                    logStream.Read(buf, 0, buf.Length);
+                    w.Write(buf);
                     client.SendAnswer(answer.ToArray());
                     return;
                 case CommonCommand.Ping:

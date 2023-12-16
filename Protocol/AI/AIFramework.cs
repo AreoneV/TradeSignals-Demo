@@ -1,6 +1,7 @@
 ﻿using MarketInfo;
 using Protocol.MarketData;
 using System.Diagnostics;
+using System.Text;
 
 namespace Protocol.AI;
 
@@ -76,14 +77,9 @@ public class AIFramework(string ip, int port)
         var answer = client.Request(memoryStream.ToArray());
         writer.Close();
         memoryStream.Close();
-        //создаем чтение и читаем из бинарного представление данные
-        using MemoryStream answerStream = new(answer);
-        var reader = new BinaryReader(answerStream);
+        
         //получаем все логи и делим их
-        var logs = reader.ReadString().Split('\n');
-        //все закрываем
-        reader.Close();
-        memoryStream.Close();
+        var logs = Encoding.UTF8.GetString(answer).Split('\n');
         //возвращаем логи
         return logs;
     }
