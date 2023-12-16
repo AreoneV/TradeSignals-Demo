@@ -1,3 +1,6 @@
+using Services;
+using System.Net;
+
 namespace AI;
 
 internal static class Program
@@ -6,9 +9,16 @@ internal static class Program
     ///  The main entry point for the application.
     /// </summary>
     [STAThread]
-    internal static int Main(string[] args)
+    //коды завершени€ программы есть в enum ExitCode
+    static int Main(string[] args)
     {
-
-        return 0;
+        //провер€ем все ли в пор€дке с полученным адресом и портом
+        if(args.Length != 2 || !IPAddress.TryParse(args[0], out _) || !int.TryParse(args[1], out int port) || port > ushort.MaxValue)
+        {
+            return (int)ExitCode.InvalidArgs;
+        }
+        //создаем и запускаем экземпл€р сервиса
+        Service service = new(args[0], port);
+        return (int)service.Run();
     }
 }
