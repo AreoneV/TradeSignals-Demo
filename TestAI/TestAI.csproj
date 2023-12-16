@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AI\AI.csproj" />
+    <ProjectReference Include="..\Protocol\Protocol.csproj" />
   </ItemGroup>
 
 </Project>

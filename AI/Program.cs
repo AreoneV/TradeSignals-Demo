@@ -10,7 +10,7 @@ public static class Program
     /// </summary>
     [STAThread]
     //коды завершения программы есть в enum ExitCode
-    static int Main(string[] args)
+    public static int Main(string[] args)
     {
         //проверяем все ли в порядке с полученным адресом и портом
         if(args.Length != 2 || !IPAddress.TryParse(args[0], out _) || !int.TryParse(args[1], out int port) || port > ushort.MaxValue)
