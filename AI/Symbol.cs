@@ -5,7 +5,7 @@ using MarketInfo;
 
 namespace AI;
 
-public class Symbol
+internal class Symbol
 {
     private readonly Dictionary<TimeFrame, BasicNetwork> buyNetworks = [];
     private readonly Dictionary<TimeFrame, BasicNetwork> sellNetworks = [];
