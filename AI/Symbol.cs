@@ -30,7 +30,7 @@ public class Symbol
             buy = nnBuy.Predict(inputs)[0];
         }
         float sell = 0;
-        if(buyNetworks.TryGetValue(timeFrame, out BasicNetwork nnSell))
+        if(sellNetworks.TryGetValue(timeFrame, out BasicNetwork nnSell))
         {
             sell = nnSell.Predict(inputs)[0];
         }
@@ -43,7 +43,8 @@ public class Symbol
 
         foreach (string file in Directory.GetFiles("Weights"))
         {
-            var arr = file.Split('-');
+            var fi = new FileInfo(file);
+            var arr = fi.Name.Split('-');
 
             if(arr.Length != 3 || arr[0] != Name) continue;
 
