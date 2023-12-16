@@ -9,10 +9,10 @@ internal static class Program
     ///  The main entry point for the application.
     /// </summary>
     [STAThread]
-    //коды завершения программы есть в enum ExiteCode
+    //коды завершения программы есть в enum ExitCode
     static int Main(string[] args)
     {
-        //проверяем все ли впорядке с полученным адресом и портом
+        //проверяем все ли в порядке с полученным адресом и портом
         if(args.Length != 2 || !IPAddress.TryParse(args[0], out _) || !int.TryParse(args[1], out int port) || port > ushort.MaxValue)
         {
             return (int)ExitCode.InvalidArgs;

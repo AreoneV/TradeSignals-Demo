@@ -1,7 +1,6 @@
 ﻿using MarketInfo;
 using Protocol;
 using Protocol.AI;
-using Protocol.MarketData;
 using Services;
 
 namespace AI;
