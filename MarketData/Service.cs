@@ -2,6 +2,7 @@
 using Protocol;
 using Protocol.MarketData;
 using Services;
+using System.Text;
 
 namespace MarketData;
 
@@ -14,8 +15,9 @@ internal class Service(string myIp, int myPort)
 {
     //Путь к файлу логов
     private const string LogFileName = "logs_market_data.txt";
-    //логгер
-    private readonly StreamWriter writer = new(LogFileName, true);
+    //логгер и его поток
+    private FileStream logStream;
+    private StreamWriter writer;
     //история символов
     private readonly Dictionary<string, Symbol> symbols = [];
     //будущие бары для генерации
@@ -37,6 +39,17 @@ internal class Service(string myIp, int myPort)
     /// <returns>Возвращает код работы программы</returns>
     public ExitCode Run()
     {
+        try
+        {
+            logStream = new FileStream(LogFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            logStream.Position = logStream.Length;
+            writer = new StreamWriter(logStream, Encoding.UTF8);
+        }
+        catch
+        {
+            return ExitCode.ErrorStarting;
+        }
+
         LogInfo("Starting...");
         
         try
@@ -269,7 +282,7 @@ internal class Service(string myIp, int myPort)
         var reader = new BinaryReader(ms);
         //данные для ответа
         using var answer = new MemoryStream();
-        var writer = new BinaryWriter(answer);
+        var w = new BinaryWriter(answer);
         try
         {
             //получаем команду
@@ -287,20 +300,23 @@ internal class Service(string myIp, int myPort)
                 case CommonCommand.SpecialCommand:
                     //берем ее и отправляем на обработку
                     var specCommand = (MarketDataCommand)reader.ReadInt32();
-                    ProcessingCommand(specCommand, reader, writer);
+                    ProcessingCommand(specCommand, reader, w);
                     //отправляем ответ
                     client.SendAnswer(answer.ToArray());
                     break;
                 case CommonCommand.Logs:
-                    //проверяем есть ли файл
-                    if(!File.Exists(LogFileName))
+                    //проверяем есть ли логи
+                    if(logStream.Length == 0)
                     {
-                        writer.Write("There isn't logs");
+                        w.Write("There isn't logs");
                         client.SendAnswer(answer.ToArray());
                         return;
                     }
                     //считываем и отправляем
-                    writer.Write(File.ReadAllText(LogFileName));
+                    logStream.Position = 0;
+                    var buf = new byte[logStream.Length];
+                    logStream.Read(buf, 0, buf.Length);
+                    w.Write(buf);
                     client.SendAnswer(answer.ToArray());
                     return;
                 default:
@@ -312,7 +328,7 @@ internal class Service(string myIp, int myPort)
         catch(Exception ex)
         {
             LogError($"Error processing command: {ex.Message}");
-            writer.Write(ex.ToString());
+            w.Write(ex.ToString());
             client.SendAnswer(answer.ToArray());
         }
     }
