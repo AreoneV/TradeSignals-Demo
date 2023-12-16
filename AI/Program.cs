@@ -3,7 +3,7 @@ using System.Net;
 
 namespace AI;
 
-internal static class Program
+public static class Program
 {
     /// <summary>
     ///  The main entry point for the application.

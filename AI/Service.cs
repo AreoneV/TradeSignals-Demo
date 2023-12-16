@@ -2,6 +2,7 @@
 using Protocol;
 using Protocol.AI;
 using Services;
+// ReSharper disable StringLiteralTypo
 
 namespace AI;
 
