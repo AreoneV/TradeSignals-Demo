@@ -1,10 +1,16 @@
 ﻿using AI.Initialization;
 
 namespace AI.Layers;
+/// <summary>
+/// Слой нейронной сети
+/// </summary>
 public abstract class Layer
 {
+    //смещения
     internal float[] b;
+    //значения
     internal float[] x;
+    //веса
     internal float[,] w;
 
     protected Layer(int size)
@@ -12,23 +18,44 @@ public abstract class Layer
         Size = size;
     }
 
-
+    /// <summary>
+    /// Размер слоя
+    /// </summary>
     internal int Size { get; private protected set; }
 
-
+    /// <summary>
+    /// Функция активации
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
     internal abstract float Activation(float x);
+    /// <summary>
+    /// Производная функции активации
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
     internal abstract float ActivationDerivative(float x);
 
 
 
-
+    /// <summary>
+    /// Инициализация весов
+    /// </summary>
+    /// <param name="inputs">Количество нейронов на предыдущем слое</param>
+    /// <param name="initialization">Функция инициализации</param>
     internal void InitializeWeights(int inputs, IInitialization initialization)
     {
         b = new float[Size];
         x = new float[Size];
         w = new float[inputs, Size];
+        //инициализируем
         initialization.Initialize(b, w);
     }
+    /// <summary>
+    /// Прямое распространение входящей информации
+    /// </summary>
+    /// <param name="input">Входящая информация</param>
+    /// <returns></returns>
     internal virtual float[] FeedForward(float[] input)
     {
         for (int i = 0; i < x.Length; i++)
@@ -36,6 +63,7 @@ public abstract class Layer
             float z = 0;
             for (int n = 0; n < input.Length; n++)
             {
+                //главная функция нейрона
                 z += input[n] * w[n, i];
             }
             z += b[i];
@@ -44,7 +72,12 @@ public abstract class Layer
 
         return x;
     }
-
+    /// <summary>
+    /// Расчет следующего градиента ошибки
+    /// </summary>
+    /// <param name="lastGradient">Предыдущей градиент ошибки</param>
+    /// <param name="nextLayer">Следующий слой</param>
+    /// <returns></returns>
     internal virtual float[] NextGradient(float[] lastGradient, Layer nextLayer)
     {
         float[] hiddenGradient = new float[Size];
@@ -61,6 +94,12 @@ public abstract class Layer
 
         return hiddenGradient;
     }
+    /// <summary>
+    /// Изменение весовых коэффициентов 
+    /// </summary>
+    /// <param name="gradients">Градиент ошибки</param>
+    /// <param name="learningRate">Скорость обучения</param>
+    /// <param name="inputs">Входные данные</param>
     internal virtual void ChangeWeights(float[] gradients, in float learningRate, float[] inputs)
     {
         for (int j = 0; j < Size; j++)
@@ -75,7 +114,10 @@ public abstract class Layer
         }
     }
 
-
+    /// <summary>
+    /// Сохранить веса слоя
+    /// </summary>
+    /// <param name="writer"></param>
     internal void SaveWeights(BinaryWriter writer)
     {
         writer.Write(Size);
@@ -97,6 +139,10 @@ public abstract class Layer
             }
         }
     }
+    /// <summary>
+    /// Загрузить веса слоя
+    /// </summary>
+    /// <param name="reader"></param>
     internal void LoadWeights(BinaryReader reader)
     {
         Size = reader.ReadInt32();
